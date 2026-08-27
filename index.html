@@ -212,11 +212,18 @@
             if (data.kegiatan && Array.isArray(data.kegiatan)) setKegiatan(data.kegiatan);
             if (data.laporan && Array.isArray(data.laporan)) setLaporan(data.laporan);
             if (data.keuangan && Array.isArray(data.keuangan)) setKeuangan(data.keuangan);
-            if (data.pengurus && (data.pengurus.rw || data.pengurus.rt13 || data.pengurus.rt14)) {
+            
+            if (data.pengurus && typeof data.pengurus === 'object') {
+              const pObj = {};
+              Object.keys(data.pengurus).forEach(k => {
+                const cleanKey = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+                pObj[cleanKey] = data.pengurus[k];
+              });
+              
               setPengurus(prev => ({
-                rw: data.pengurus.rw?.nama ? data.pengurus.rw : prev.rw,
-                rt13: data.pengurus.rt13?.nama ? data.pengurus.rt13 : prev.rt13,
-                rt14: data.pengurus.rt14?.nama ? data.pengurus.rt14 : prev.rt14,
+                rw: pObj.rw?.nama ? pObj.rw : prev.rw,
+                rt13: pObj.rt13?.nama ? pObj.rt13 : prev.rt13,
+                rt14: pObj.rt14?.nama ? pObj.rt14 : prev.rt14,
               }));
             }
             if (data.passwords && data.passwords.superadmin) setPasswords(data.passwords);
@@ -1065,23 +1072,43 @@
       const [fotoKegiatan, setFotoKegiatan] = useState(null);
 
       const [showSettingsModal, setShowSettingsModal] = useState(false);
-      const [selectedRW, setSelectedRW] = useState(pengurus.rw?.nama || '');
-      const [selectedRT13, setSelectedRT13] = useState(pengurus.rt13?.nama || '');
-      const [selectedRT14, setSelectedRT14] = useState(pengurus.rt14?.nama || '');
+      const [selectedRW, setSelectedRW] = useState('');
+      const [selectedRT13, setSelectedRT13] = useState('');
+      const [selectedRT14, setSelectedRT14] = useState('');
 
       const [passSuper, setPassSuper] = useState(passwords.superadmin || 'jakun123');
       const [passRW, setPassRW] = useState(passwords.rw || 'jakun321');
       const [passRT13, setPassRT13] = useState(passwords.rt13 || 'jakun321');
       const [passRT14, setPassRT14] = useState(passwords.rt14 || 'jakun321');
 
-      // Update state modal setiap kali modal dibuka agar memilih nama yang aktif
+      // Daftar warga per RT untuk opsi dropdown
+      const listWargaRW = useMemo(() => warga, [warga]);
+      const listWargaRT13 = useMemo(() => {
+        const filtered = warga.filter(w => String(w.rt).includes('13'));
+        return filtered.length > 0 ? filtered : warga;
+      }, [warga]);
+      const listWargaRT14 = useMemo(() => {
+        const filtered = warga.filter(w => String(w.rt).includes('14'));
+        return filtered.length > 0 ? filtered : warga;
+      }, [warga]);
+
+      // Mengisi state dropdown saat modal dibuka
       useEffect(() => {
         if (showSettingsModal) {
-          setSelectedRW(pengurus.rw?.nama || (warga[0]?.nama || ''));
-          setSelectedRT13(pengurus.rt13?.nama || (warga.find(w => String(w.rt) === '13')?.nama || ''));
-          setSelectedRT14(pengurus.rt14?.nama || (warga.find(w => String(w.rt) === '14')?.nama || ''));
+          const currentRW = pengurus.rw?.nama && listWargaRW.some(w => w.nama === pengurus.rw.nama)
+            ? pengurus.rw.nama : (listWargaRW[0]?.nama || '');
+          
+          const currentRT13 = pengurus.rt13?.nama && listWargaRT13.some(w => w.nama === pengurus.rt13.nama)
+            ? pengurus.rt13.nama : (listWargaRT13[0]?.nama || '');
+          
+          const currentRT14 = pengurus.rt14?.nama && listWargaRT14.some(w => w.nama === pengurus.rt14.nama)
+            ? pengurus.rt14.nama : (listWargaRT14[0]?.nama || '');
+
+          setSelectedRW(currentRW);
+          setSelectedRT13(currentRT13);
+          setSelectedRT14(currentRT14);
         }
-      }, [showSettingsModal]);
+      }, [showSettingsModal, pengurus, warga, listWargaRW, listWargaRT13, listWargaRT14]);
 
       const handleNominalChange = (e) => {
         const rawVal = e.target.value.replace(/\D/g, '');
@@ -1138,27 +1165,26 @@
         alert("Kegiatan ditambahkan!");
       };
 
-      // PERBAIKAN: Fungsi simpan pengaturan pengurus & password admin
+      // PERBAIKAN UTAMA: Penanganan Simpan Pengurus RT 13, RT 14, & RW secara lengkap
       const handleSaveSettings = (e) => {
         e.preventDefault();
 
-        // Cari data warga lengkap berdasarkan nama yang dipilih di dropdown
-        const dataRW = warga.find(w => w.nama === selectedRW);
-        const dataRT13 = warga.find(w => w.nama === selectedRT13);
-        const dataRT14 = warga.find(w => w.nama === selectedRT14);
+        const dataRW = warga.find(w => w.nama.trim().toLowerCase() === selectedRW.trim().toLowerCase());
+        const dataRT13 = warga.find(w => w.nama.trim().toLowerCase() === selectedRT13.trim().toLowerCase());
+        const dataRT14 = warga.find(w => w.nama.trim().toLowerCase() === selectedRT14.trim().toLowerCase());
 
         const updatedPengurus = {
           rw: { 
-            nama: selectedRW, 
-            wa: dataRW && dataRW.noWa && dataRW.noWa !== '-' ? dataRW.noWa : (pengurus.rw?.wa || '081234567890') 
+            nama: selectedRW || pengurus.rw?.nama || '-', 
+            wa: (dataRW && dataRW.noWa && dataRW.noWa !== '-') ? dataRW.noWa : (pengurus.rw?.wa || '081234567890') 
           },
           rt13: { 
-            nama: selectedRT13, 
-            wa: dataRT13 && dataRT13.noWa && dataRT13.noWa !== '-' ? dataRT13.noWa : (pengurus.rt13?.wa || '081298765432') 
+            nama: selectedRT13 || pengurus.rt13?.nama || '-', 
+            wa: (dataRT13 && dataRT13.noWa && dataRT13.noWa !== '-') ? dataRT13.noWa : (pengurus.rt13?.wa || '081298765432') 
           },
           rt14: { 
-            nama: selectedRT14, 
-            wa: dataRT14 && dataRT14.noWa && dataRT14.noWa !== '-' ? dataRT14.noWa : (pengurus.rt14?.wa || '081345678901') 
+            nama: selectedRT14 || pengurus.rt14?.nama || '-', 
+            wa: (dataRT14 && dataRT14.noWa && dataRT14.noWa !== '-') ? dataRT14.noWa : (pengurus.rt14?.wa || '081345678901') 
           }
         };
 
@@ -1169,15 +1195,13 @@
           rt14: passRT14 
         };
 
-        // Perbarui State Lokal
         setPengurus(updatedPengurus);
         setPasswords(updatedPasswords);
 
-        // Kirim Ke Google Sheets
         sendDataToGSheet('updateSettings', { pengurus: updatedPengurus, passwords: updatedPasswords });
 
         setShowSettingsModal(false);
-        alert("Pengaturan susunan pengurus & password berhasil diperbarui!");
+        alert("Pengaturan susunan pengurus (RW, RT 13, RT 14) dan password berhasil diperbarui!");
       };
 
       return (
@@ -1257,21 +1281,21 @@
                     <div>
                       <label className="block font-semibold mb-1 text-slate-600">Ketua RW 07</label>
                       <select value={selectedRW} onChange={e => setSelectedRW(e.target.value)} className="w-full p-2 border rounded-lg bg-white font-medium">
-                        {warga.map(w => <option key={w.id} value={w.nama}>{w.nama} (RT {w.rt})</option>)}
+                        {listWargaRW.map(w => <option key={w.id} value={w.nama}>{w.nama} (RT {w.rt})</option>)}
                       </select>
                     </div>
 
                     <div>
                       <label className="block font-semibold mb-1 text-slate-600">Ketua RT 13</label>
                       <select value={selectedRT13} onChange={e => setSelectedRT13(e.target.value)} className="w-full p-2 border rounded-lg bg-white font-medium">
-                        {warga.filter(w => String(w.rt) === '13').map(w => <option key={w.id} value={w.nama}>{w.nama}</option>)}
+                        {listWargaRT13.map(w => <option key={w.id} value={w.nama}>{w.nama}</option>)}
                       </select>
                     </div>
 
                     <div>
                       <label className="block font-semibold mb-1 text-slate-600">Ketua RT 14</label>
                       <select value={selectedRT14} onChange={e => setSelectedRT14(e.target.value)} className="w-full p-2 border rounded-lg bg-white font-medium">
-                        {warga.filter(w => String(w.rt) === '14').map(w => <option key={w.id} value={w.nama}>{w.nama}</option>)}
+                        {listWargaRT14.map(w => <option key={w.id} value={w.nama}>{w.nama}</option>)}
                       </select>
                     </div>
                   </div>
