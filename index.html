@@ -1,1342 +1,365 @@
-```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JAKUN NGAHIJI - Sistem Informasi Terpadu Warga</title>
-  
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- React & ReactDOM CDN -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  
-  <!-- Babel Standalone untuk parsing JSX -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-  <style>
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JAKUN NGAHIJI - Portal Warga RW 07</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .bg-gradient-brand { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%); }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+<body class="bg-slate-50 font-sans text-slate-800 min-h-screen flex flex-col justify-between pb-16">
 
-  <div id="root"></div>
+    <!-- HEADER / NAVIGATION -->
+    <header class="bg-gradient-brand text-white shadow-lg sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center border-2 border-orange-400">
+                    <i class="fa-solid fa-people-group text-lg text-orange-400"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-extrabold tracking-wider text-white">JAKUN NGAHIJI</h1>
+                    <p class="text-[10px] text-blue-100">Portal Resmi Warga RW 07 • Rukun Sauyunan</p>
+                </div>
+            </div>
+            <div id="loading-indicator" class="hidden text-xs bg-amber-400 text-amber-950 px-2.5 py-1 rounded-md font-bold animate-pulse">
+                <i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat Data...
+            </div>
+        </div>
 
-  <script type="text/babel">
-    const { useState, useEffect, useMemo } = React;
+        <!-- Navigation Tabs -->
+        <div class="bg-blue-950/40 border-t border-blue-500/20">
+            <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto custom-scrollbar gap-1 py-1">
+                <button onclick="changeTab('warga')" id="nav-warga" class="nav-tab px-4 py-2 text-xs sm:text-sm font-medium rounded-lg whitespace-nowrap text-white bg-orange-500 shadow">
+                    <i class="fa-solid fa-house-chimney-user mr-1.5"></i> Data KK & Warga
+                </button>
+                <button onclick="changeTab('statistik')" id="nav-statistik" class="nav-tab px-4 py-2 text-xs sm:text-sm font-medium rounded-lg whitespace-nowrap text-blue-100 hover:bg-blue-800/50">
+                    <i class="fa-solid fa-chart-pie mr-1.5"></i> Statistik
+                </button>
+                <button onclick="changeTab('keuangan')" id="nav-keuangan" class="nav-tab px-4 py-2 text-xs sm:text-sm font-medium rounded-lg whitespace-nowrap text-blue-100 hover:bg-blue-800/50">
+                    <i class="fa-solid fa-wallet mr-1.5"></i> Keuangan Kas
+                </button>
+                <button onclick="changeTab('laporan')" id="nav-laporan" class="nav-tab px-4 py-2 text-xs sm:text-sm font-medium rounded-lg whitespace-nowrap text-blue-100 hover:bg-blue-800/50">
+                    <i class="fa-solid fa-bullhorn mr-1.5"></i> Warga Melapor
+                </button>
+                <button onclick="changeTab('pengumuman')" id="nav-pengumuman" class="nav-tab px-4 py-2 text-xs sm:text-sm font-medium rounded-lg whitespace-nowrap text-blue-100 hover:bg-blue-800/50">
+                    <i class="fa-solid fa-newspaper mr-1.5"></i> Pengumuman & Agenda
+                </button>
+            </div>
+        </div>
+    </header>
 
-    // =========================================================================
-    // GOOGLE APPS SCRIPT WEB APP URL
-    // Tempelkan URL Deployment Apps Script Anda di sini
-    // =========================================================================
-    const API_URL = "https://script.google.com/macros/s/AKfycby-tNYHTAZUXxEtF3CL6NoKY7plx1D4AHChNKMBKVyHywGDpbrhqU4MuRBHpLJpgz85Qg/exec";
+    <!-- MAIN CONTENT -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
 
-    // --- KOMPONEN IKON SVG ---
-    const IconUsers = ({ size = 20, className = "" }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-        <circle cx="9" cy="7" r="4"></circle>
-        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-      </svg>
-    );
+        <!-- TAB 1: DATA WARGA PER KK -->
+        <section id="tab-warga" class="tab-content">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mb-6">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-users text-blue-600"></i> Data Keluarga Warga RW 07</h2>
+                    <p class="text-xs text-slate-500">Dikelompokkan berdasarkan Keluarga (KK). Privasi NIK & No KK dilindungi.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <select id="filter-rt" onchange="renderWargaByKK()" class="text-xs py-1.5 px-2.5 rounded-lg border border-slate-300 bg-white">
+                        <option value="ALL">Semua RT</option>
+                        <option value="RT 13">RT 13</option>
+                        <option value="RT 14">RT 14</option>
+                    </select>
+                    <input type="text" id="search-warga" onkeyup="renderWargaByKK()" placeholder="Cari Kepala Keluarga / Nama..." class="px-3 py-1.5 text-xs rounded-lg border border-slate-300 w-48 sm:w-64">
+                </div>
+            </div>
+            <div id="container-kk-list" class="space-y-6"></div>
+        </section>
 
-    const IconHome = ({ size = 20, className = "" }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-      </svg>
-    );
+        <!-- TAB 2: STATISTIK -->
+        <section id="tab-statistik" class="tab-content hidden">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-blue-100 border-l-4 border-l-blue-600">
+                    <p class="text-xs font-semibold text-slate-500">Total KK</p>
+                    <h3 id="stat-total-kk" class="text-2xl font-bold text-blue-900">0</h3>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-blue-100 border-l-4 border-l-orange-500">
+                    <p class="text-xs font-semibold text-slate-500">Total Jiwa</p>
+                    <h3 id="stat-total-jiwa" class="text-2xl font-bold text-orange-600">0</h3>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-blue-100 border-l-4 border-l-emerald-500">
+                    <p class="text-xs font-semibold text-slate-500">Status Warga</p>
+                    <div class="text-xs mt-1">Tetap: <strong id="stat-tetap">0</strong> | Pendatang: <strong id="stat-pendatang">0</strong></div>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-blue-100 border-l-4 border-l-purple-500">
+                    <p class="text-xs font-semibold text-slate-500">Anak Yatim (&lt;17 Th)</p>
+                    <h3 id="stat-total-yatim" class="text-2xl font-bold text-purple-700">0</h3>
+                </div>
+            </div>
 
-    const IconChart = ({ size = 20, className = "" }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <line x1="18" y1="20" x2="18" y2="10"></line>
-        <line x1="12" y1="20" x2="12" y2="4"></line>
-        <line x1="6" y1="20" x2="6" y2="14"></line>
-      </svg>
-    );
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-4 rounded-xl border border-slate-200">
+                    <h4 class="text-xs font-bold mb-3 border-b pb-2">Rincian Per RT (KK & Jiwa)</h4>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between p-2 bg-slate-50 rounded"><span>RT 13</span><strong id="stat-rt13">0 KK • 0 Jiwa</strong></div>
+                        <div class="flex justify-between p-2 bg-slate-50 rounded"><span>RT 14</span><strong id="stat-rt14">0 KK • 0 Jiwa</strong></div>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200">
+                    <h4 class="text-xs font-bold mb-3 border-b pb-2">Distribusi Kelompok Usia</h4>
+                    <div class="relative h-48"><canvas id="ageChart"></canvas></div>
+                </div>
+            </div>
+        </section>
 
-    const IconAlert = ({ size = 20, className = "" }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="8" x2="12" y2="12"></line>
-        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-      </svg>
-    );
+        <!-- TAB 3: KEUANGAN -->
+        <section id="tab-keuangan" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-gradient-brand text-white p-4 rounded-xl shadow-md">
+                    <p class="text-xs font-medium text-blue-100">Total Saldo Kas RW</p>
+                    <h3 id="saldo-total" class="text-2xl font-extrabold mt-1">Rp 0</h3>
+                </div>
+                <div class="bg-white p-4 rounded-xl border">
+                    <p class="text-xs font-semibold text-slate-500">Kas Iuran Wajib</p>
+                    <h4 id="saldo-wajib" class="text-lg font-bold">Rp 0</h4>
+                </div>
+                <div class="bg-white p-4 rounded-xl border">
+                    <p class="text-xs font-semibold text-slate-500">Kas Iuran Lain-Lain</p>
+                    <h4 id="saldo-lain" class="text-lg font-bold">Rp 0</h4>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                <div class="p-3 bg-slate-50 font-bold text-xs">Riwayat Transaksi Kas</div>
+                <table class="w-full text-left text-xs">
+                    <thead><tr class="bg-slate-100 border-b"><th class="p-2.5">Tanggal</th><th class="p-2.5">Kategori</th><th class="p-2.5">Tipe</th><th class="p-2.5">Keterangan</th><th class="p-2.5 text-right">Nominal</th></tr></thead>
+                    <tbody id="table-keuangan-body" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </section>
 
-    const IconDollar = ({ size = 20, className = "" }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <line x1="12" y1="1" x2="12" y2="23"></line>
-        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-      </svg>
-    );
+        <!-- TAB 4: LAPORAN -->
+        <section id="tab-laporan" class="tab-content hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-bold">Layanan Warga Melapor</h2>
+                <button onclick="openModalLapor()" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-2 rounded-lg font-bold shadow">+ Buat Laporan</button>
+            </div>
+            <div id="container-laporan" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </section>
 
-    const IconSettings = ({ size = 20, className = "" }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <circle cx="12" cy="12" r="3"></circle>
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-      </svg>
-    );
+        <!-- TAB 5: PENGUMUMAN -->
+        <section id="tab-pengumuman" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="space-y-3"><h3 class="text-xs font-bold border-b pb-2">Pengumuman</h3><div id="list-pengumuman" class="space-y-2"></div></div>
+                <div class="lg:col-span-2 space-y-3"><h3 class="text-xs font-bold border-b pb-2">Agenda Kegiatan</h3><div id="list-kegiatan" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div>
+            </div>
+        </section>
 
-    const IconLogOut = ({ size = 20, className = "" }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-        <polyline points="16 17 21 12 16 7"></polyline>
-        <line x1="21" y1="12" x2="9" y2="12"></line>
-      </svg>
-    );
+    </main>
 
-    const IconTrash = ({ size = 16, className = "" }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <polyline points="3 6 5 6 21 6"></polyline>
-        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-      </svg>
-    );
+    <!-- STATIC FOOTER -->
+    <footer class="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md text-slate-300 text-xs py-2.5 border-t border-slate-700 z-30 shadow-2xl">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center text-[10px]">
+            <div><strong>JAKUN NGAHIJI</strong> • RW 07 Rukun Sauyunan</div>
+            <div class="text-emerald-400"><i class="fa-solid fa-circle-check mr-1"></i> Connect GAS API Realtime</div>
+        </div>
+    </footer>
 
-    const IconSearch = ({ size = 18, className = "" }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
-    );
+    <!-- MODAL LAPORAN -->
+    <div id="modal-lapor" class="fixed inset-0 bg-slate-900/60 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-4 space-y-3 text-xs">
+            <h3 class="font-bold border-b pb-2">Kirim Laporan Warga</h3>
+            <form onsubmit="sendLaporan(event)" class="space-y-2">
+                <div><label>Nama Pelapor</label><input type="text" id="l-nama" required class="w-full p-2 border rounded"></div>
+                <div><label>Jenis Laporan</label><select id="l-jenis" class="w-full p-2 border rounded"><option value="Keamanan">Keamanan</option><option value="Fasilitas">Fasilitas Rusak</option><option value="Kebersihan">Kebersihan</option></select></div>
+                <div><label>Lokasi Kejadian</label><input type="text" id="l-lokasi" required class="w-full p-2 border rounded"></div>
+                <div><label>Uraian Laporan</label><textarea id="l-uraian" rows="3" required class="w-full p-2 border rounded"></textarea></div>
+                <div class="pt-2 flex justify-end gap-2 border-t">
+                    <button type="button" onclick="closeModalLapor()" class="px-3 py-1 bg-slate-200 rounded">Batal</button>
+                    <button type="submit" class="px-4 py-1 bg-orange-500 text-white font-bold rounded">Kirim</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-    const IconFilter = ({ size = 14, className = "" }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-      </svg>
-    );
+    <!-- JAVASCRIPT API CONNECTIVITY -->
+    <script>
+        // GANTI DENGAN URL DEPLOYMENT GOOGLE APPS SCRIPT ANDA
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx1-Qh4MFfZ5gkYIjlH5tHW2kjARMWgnYOPPTbvDSxXtNx05En9IuyrnIzmZSHwVw_yqQ/exec";
 
-    const IconX = ({ size = 20, className = "" }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
-    );
+        let storeWarga = [];
+        let storeKeuangan = [];
+        let storeLaporan = [];
+        let storePengumuman = [];
+        let storeKegiatan = [];
+        let ageChartInstance = null;
 
-    const IconRefresh = ({ size = 16, className = "" }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <polyline points="23 4 23 10 17 10"></polyline>
-        <polyline points="1 20 1 14 7 14"></polyline>
-        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-      </svg>
-    );
+        window.onload = function() {
+            fetchAllData();
+        };
 
-    const IconHeart = ({ size = 16, className = "" }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-      </svg>
-    );
-
-    const IconShield = ({ size = 18, className = "" }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-      </svg>
-    );
-
-    // Helper Format Rupiah
-    const formatRupiah = (angka) => {
-      if (!angka && angka !== 0) return 'Rp 0';
-      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
-    };
-
-    // Data Awal Cadangan
-    const INITIAL_PENGURUS = {
-      rw: { nama: "Suryana", wa: "081234567890" },
-      rt13: { nama: "Siti Aminah", wa: "081233334444" },
-      rt14: { nama: "Ahmad Junaedi", wa: "085566667777" }
-    };
-
-    const INITIAL_PASSWORDS = {
-      superadmin: "jakun123",
-      rw: "jakun321",
-      rt13: "jakun321",
-      rt14: "jakun321"
-    };
-
-    const INITIAL_WARGA = [
-      { id: 1, no_kk: "3201010001", nama: "Suryana", peran: "Kepala Keluarga", rt: "13", status: "Tetap", yatim: false, tglLahir: "1975-08-15", noWa: "081234567890", meninggal: false, lansia: false },
-      { id: 2, no_kk: "3201010001", nama: "Siti Aminah", peran: "Istri", rt: "13", status: "Tetap", yatim: false, tglLahir: "1978-02-20", noWa: "081233334444", meninggal: false, lansia: false },
-      { id: 3, no_kk: "3201010002", nama: "Ahmad Junaedi", peran: "Kepala Keluarga", rt: "14", status: "Pendatang", yatim: false, tglLahir: "1955-11-10", noWa: "085566667777", meninggal: false, lansia: true },
-      { id: 4, no_kk: "3201010002", nama: "Budi Santoso", peran: "Anak", rt: "14", status: "Pendatang", yatim: false, tglLahir: "2015-05-05", noWa: "-", meninggal: false, lansia: false },
-      { id: 5, no_kk: "3201010003", nama: "Sinta", peran: "Anak", rt: "13", status: "Tetap", yatim: true, tglLahir: "2012-08-27", noWa: "-", meninggal: false, lansia: false }
-    ];
-
-    const INITIAL_PENGUMUMAN = [
-      { id: 1, judul: "Kerja Bakti Kebersihan Lingkungan RW 07", uraian: "Diharapkan kehadiran seluruh warga RT 13 dan RT 14 untuk kerja bakti membersihkan selokan.", tanggal: "2026-08-25" }
-    ];
-
-    const INITIAL_KEGIATAN = [
-      { id: 1, nama: "Lomba Peringatan 17 Agustusan", tanggal: "2026-08-17", foto: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=500&auto=format&fit=crop&q=60" }
-    ];
-
-    const INITIAL_LAPORAN = [
-      { id: 1, pelapor: "Bpk. Budi", jenis: "Fasilitas", uraian: "Lampu jalan utama dekat pos ronda RT 13 mati total.", lokasi: "Pos Ronda RT 13", foto: null, status: "Sedang diKerjakan", darurat: false, tanggal: "2026-08-26" }
-    ];
-
-    const INITIAL_KEUANGAN = [
-      { id: 1, jenis_kas: "Wajib", tipe: "Masuk", nominal: 500000, penyetor: "Budi Santoso", keterangan: "Iuran Warga RT 13 Bulan Juli", tanggal: "2026-08-01" },
-      { id: 2, jenis_kas: "Wajib", tipe: "Masuk", nominal: 450000, penyetor: "Ahmad Junaedi", keterangan: "Iuran Warga RT 14 Bulan Juli", tanggal: "2026-08-02" },
-      { id: 3, jenis_kas: "Wajib", tipe: "Keluar", nominal: 150000, penyetor: "", keterangan: "Honorarium Petugas Kebersihan", tanggal: "2026-08-05" }
-    ];
-
-    // KOMPONEN UTAMA APPS
-    function App() {
-      const [user, setUser] = useState(null);
-      const [activeTab, setActiveTab] = useState('beranda');
-      const [zoomedImage, setZoomedImage] = useState(null);
-      const [loading, setLoading] = useState(false);
-
-      const [warga, setWarga] = useState(INITIAL_WARGA);
-      const [pengumuman, setPengumuman] = useState(INITIAL_PENGUMUMAN);
-      const [kegiatan, setKegiatan] = useState(INITIAL_KEGIATAN);
-      const [laporan, setLaporan] = useState(INITIAL_LAPORAN);
-      const [keuangan, setKeuangan] = useState(INITIAL_KEUANGAN);
-      const [pengurus, setPengurus] = useState(INITIAL_PENGURUS);
-      const [passwords, setPasswords] = useState(INITIAL_PASSWORDS);
-
-      // Memuat Data dari Google Sheets
-      const loadDataFromGSheet = async () => {
-        if (!API_URL || API_URL.includes("GANTI_DENGAN_DEPLOYMENT_URL_ANDA")) {
-          return;
+        function showLoading(show) {
+            document.getElementById('loading-indicator').classList.toggle('hidden', !show);
         }
-        setLoading(true);
-        try {
-          const response = await fetch(`${API_URL}?action=getAllData`);
-          const data = await response.json();
-          if (data) {
-            if (data.warga && Array.isArray(data.warga) && data.warga.length > 0) setWarga(data.warga);
-            if (data.pengumuman && Array.isArray(data.pengumuman)) setPengumuman(data.pengumuman);
-            if (data.kegiatan && Array.isArray(data.kegiatan)) setKegiatan(data.kegiatan);
-            if (data.laporan && Array.isArray(data.laporan)) setLaporan(data.laporan);
-            if (data.keuangan && Array.isArray(data.keuangan)) setKeuangan(data.keuangan);
-            
-            if (data.pengurus && typeof data.pengurus === 'object') {
-              const pObj = {};
-              Object.keys(data.pengurus).forEach(k => {
-                const cleanKey = k.toLowerCase().replace(/[^a-z0-9]/g, '');
-                pObj[cleanKey] = data.pengurus[k];
-              });
-              
-              setPengurus(prev => ({
-                rw: pObj.rw?.nama ? pObj.rw : prev.rw,
-                rt13: pObj.rt13?.nama ? pObj.rt13 : prev.rt13,
-                rt14: pObj.rt14?.nama ? pObj.rt14 : prev.rt14,
-              }));
+
+        async function fetchAllData() {
+            showLoading(true);
+            try {
+                // Fetch Data Warga Public
+                const resWarga = await fetch(`${GAS_API_URL}?action=getDataWargaPublic`);
+                const jsonWarga = await resWarga.json();
+                if(jsonWarga.status === 'success') storeWarga = jsonWarga.data;
+
+                // Fetch Keuangan
+                const resKeu = await fetch(`${GAS_API_URL}?action=getKeuangan`);
+                const jsonKeu = await resKeu.json();
+                if(jsonKeu.status === 'success') storeKeuangan = jsonKeu.data;
+
+                // Fetch Laporan
+                const resLap = await fetch(`${GAS_API_URL}?action=getLaporan`);
+                const jsonLap = await resLap.json();
+                if(jsonLap.status === 'success') storeLaporan = jsonLap.data;
+
+                // Fetch Pengumuman & Kegiatan
+                const resInfo = await fetch(`${GAS_API_URL}?action=getPengumumanKegiatan`);
+                const jsonInfo = await resInfo.json();
+                if(jsonInfo.status === 'success') {
+                    storePengumuman = jsonInfo.data.pengumuman;
+                    storeKegiatan = jsonInfo.data.kegiatan;
+                }
+
+                renderWargaByKK();
+                renderStatistik();
+                renderKeuangan();
+                renderLaporan();
+                renderPengumuman();
+            } catch (err) {
+                console.error("Gagal koneksi GAS API:", err);
+            } finally {
+                showLoading(false);
             }
-            if (data.passwords && data.passwords.superadmin) setPasswords(data.passwords);
-          }
-        } catch (error) {
-          console.error("Gagal sinkronisasi Google Sheets:", error);
-        } finally {
-          setLoading(false);
         }
-      };
 
-      useEffect(() => {
-        loadDataFromGSheet();
-      }, []);
-
-      const sendDataToGSheet = async (action, payload) => {
-        if (!API_URL || API_URL.includes("GANTI_DENGAN_DEPLOYMENT_URL_ANDA")) return;
-        try {
-          await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action, payload })
-          });
-        } catch (err) {
-          console.error("Gagal kirim data GSheet:", err);
+        function calculateAge(bStr) {
+            if(!bStr) return 0;
+            const b = new Date(bStr); const t = new Date();
+            let age = t.getFullYear() - b.getFullYear();
+            if (t.getMonth() - b.getMonth() < 0) age--;
+            return age;
         }
-      };
 
-      if (!user) {
-        return <LoginScreen onLogin={setUser} passwords={passwords} />;
-      }
+        function renderWargaByKK() {
+            const container = document.getElementById('container-kk-list');
+            const search = document.getElementById('search-warga').value.toLowerCase();
+            const rtVal = document.getElementById('filter-rt').value;
+            container.innerHTML = '';
 
-      const renderContent = () => {
-        switch (activeTab) {
-          case 'beranda': 
-            return <Beranda warga={warga} pengumuman={pengumuman} kegiatan={kegiatan} pengurus={pengurus} keuangan={keuangan} laporan={laporan} user={user} setPengumuman={setPengumuman} setKegiatan={setKegiatan} onZoomImage={setZoomedImage} sendDataToGSheet={sendDataToGSheet} />;
-          case 'warga': 
-            return <DataWarga data={warga} user={user} setWarga={setWarga} pengurus={pengurus} sendDataToGSheet={sendDataToGSheet} />;
-          case 'statistik': 
-            return <Statistik data={warga} />;
-          case 'lapor': 
-            return <WargaMelapor laporan={laporan} setLaporan={setLaporan} user={user} onZoomImage={setZoomedImage} sendDataToGSheet={sendDataToGSheet} />;
-          case 'keuangan': 
-            return <Keuangan keuangan={keuangan} />;
-          case 'admin': 
-            return (
-              <FiturAdmin 
-                user={user} 
-                warga={warga}
-                pengumuman={pengumuman}
-                kegiatan={kegiatan}
-                pengurus={pengurus}
-                passwords={passwords}
-                setPengumuman={setPengumuman} 
-                setKegiatan={setKegiatan} 
-                setKeuangan={setKeuangan}
-                setPengurus={setPengurus}
-                setPasswords={setPasswords}
-                sendDataToGSheet={sendDataToGSheet}
-              />
-            );
-          default: 
-            return <Beranda warga={warga} pengumuman={pengumuman} kegiatan={kegiatan} pengurus={pengurus} keuangan={keuangan} laporan={laporan} user={user} setPengumuman={setPengumuman} setKegiatan={setKegiatan} onZoomImage={setZoomedImage} sendDataToGSheet={sendDataToGSheet} />;
+            const grouped = {};
+            storeWarga.forEach(w => {
+                if (rtVal !== 'ALL' && w.rt !== rtVal) return;
+                if(!grouped[w.nokk]) grouped[w.nokk] = [];
+                grouped[w.nokk].push(w);
+            });
+
+            let idx = 1;
+            for (const nokk in grouped) {
+                const members = grouped[nokk];
+                const kepala = members.find(m => m.peran === 'Kepala Keluarga') || members[0];
+                if(search && !members.some(m => m.nama.toLowerCase().includes(search))) continue;
+
+                let rows = '';
+                members.forEach((m, i) => {
+                    const waLink = m.wa ? `<a href="https://wa.me/${m.wa}" target="_blank" class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold"><i class="fa-brands fa-whatsapp"></i> ${m.wa}</a>` : '-';
+                    rows += `
+                        <tr class="border-b text-xs">
+                            <td class="p-2 text-center text-slate-400">${i+1}</td>
+                            <td class="p-2 font-bold">${m.nama}</td>
+                            <td class="p-2">${m.peran}</td>
+                            <td class="p-2 font-bold ${m.jk==='L'?'text-blue-600':'text-pink-600'}">${m.jk}</td>
+                            <td class="p-2">${waLink}</td>
+                            <td class="p-2"><span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">${m.status}</span></td>
+                        </tr>
+                    `;
+                });
+
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-xl border shadow-sm overflow-hidden";
+                card.innerHTML = `
+                    <div class="bg-slate-100 p-3 border-b flex justify-between items-center text-xs">
+                        <h3 class="font-extrabold text-slate-800">Keluarga Bpk/Ibu ${kepala.nama}</h3>
+                        <span class="bg-blue-600 text-white font-bold px-2 py-0.5 rounded">${kepala.rt} / ${kepala.rw}</span>
+                    </div>
+                    <table class="w-full text-left"><thead><tr class="bg-slate-50 text-[11px] border-b"><th class="p-2 w-8">No</th><th class="p-2">Nama</th><th class="p-2">Peran</th><th class="p-2">JK</th><th class="p-2">WA</th><th class="p-2">Status</th></tr></thead><tbody>${rows}</tbody></table>
+                `;
+                container.appendChild(card);
+                idx++;
+            }
         }
-      };
 
-      return (
-        <div className="min-h-screen bg-slate-50 font-sans flex flex-col text-slate-800">
-          {/* Header Aplikasi */}
-          <header className="bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white p-4 sticky top-0 z-50 shadow-md">
-            <div className="flex justify-between items-center max-w-4xl mx-auto">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-white rounded-full flex justify-center items-center text-blue-600 shadow">
-                  <IconUsers size={24} />
-                </div>
-                <div>
-                  <h1 className="font-bold text-lg leading-tight tracking-wide">JAKUN NGAHIJI</h1>
-                  <p className="text-xs italic font-light opacity-90">Hirup Guyub Sauyunan</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2 text-sm">
-                <button 
-                  onClick={loadDataFromGSheet} 
-                  className={`p-2 bg-blue-800/40 hover:bg-blue-800/80 rounded-full transition text-white ${loading ? 'animate-spin' : ''}`}
-                  title="Sinkron Data Google Sheets"
-                >
-                  <IconRefresh size={16} />
-                </button>
-                <span className="hidden sm:inline-block px-3 py-1 bg-blue-900 bg-opacity-40 rounded-full font-medium border border-blue-300/30 text-xs">
-                  {user.role === 'superadmin' ? 'SUPER ADMIN' : user.role.toUpperCase()}
-                </span>
-                <button 
-                  onClick={() => setUser(null)} 
-                  className="p-2 bg-orange-500 rounded-full hover:bg-orange-600 transition shadow flex items-center justify-center text-white"
-                  title="Keluar"
-                >
-                  <IconLogOut size={16} />
-                </button>
-              </div>
-            </div>
-          </header>
-
-          {/* Navigasi Utama */}
-          <nav className="bg-white shadow-sm sticky top-[72px] z-40 overflow-x-auto hide-scrollbar border-b border-slate-100">
-            <div className="flex px-2 py-2 max-w-4xl mx-auto space-x-1 min-w-max">
-              <NavButton active={activeTab === 'beranda'} onClick={() => setActiveTab('beranda')} icon={<IconHome size={18}/>} label="Beranda" />
-              <NavButton active={activeTab === 'warga'} onClick={() => setActiveTab('warga')} icon={<IconUsers size={18}/>} label="Data Warga" />
-              <NavButton active={activeTab === 'statistik'} onClick={() => setActiveTab('statistik')} icon={<IconChart size={18}/>} label="Statistik" />
-              <NavButton active={activeTab === 'lapor'} onClick={() => setActiveTab('lapor')} icon={<IconAlert size={18}/>} label="Warga Melapor" />
-              <NavButton active={activeTab === 'keuangan'} onClick={() => setActiveTab('keuangan')} icon={<IconDollar size={18}/>} label="Keuangan" />
-              {user.role !== 'warga' && (
-                <NavButton active={activeTab === 'admin'} onClick={() => setActiveTab('admin')} icon={<IconSettings size={18}/>} label="Fitur Admin" />
-              )}
-            </div>
-          </nav>
-
-          {loading && (
-            <div className="bg-blue-50 text-blue-700 text-xs p-2 text-center border-b border-blue-200 font-semibold flex items-center justify-center space-x-2">
-              <IconRefresh size={14} className="animate-spin" />
-              <span>Memuat data dari Google Sheets...</span>
-            </div>
-          )}
-
-          {/* Area Konten Utama */}
-          <main className="flex-grow p-4 max-w-4xl mx-auto w-full pb-20">
-            {renderContent()}
-          </main>
-
-          {/* Modal Zoom Foto */}
-          {zoomedImage && (
-            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setZoomedImage(null)}>
-              <div className="relative max-w-3xl w-full max-h-[90vh] flex flex-col items-center justify-center">
-                <button onClick={() => setZoomedImage(null)} className="absolute -top-10 right-0 text-white bg-white/20 p-2 rounded-full hover:bg-white/40 transition">
-                  <IconX size={24} />
-                </button>
-                <img src={zoomedImage} alt="Zoom" className="max-w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl border border-white/20" onClick={(e) => e.stopPropagation()} />
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    function NavButton({ active, onClick, icon, label }) {
-      return (
-        <button onClick={onClick} className={`flex items-center space-x-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${active ? 'bg-orange-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'}`}>
-          {icon}
-          <span>{label}</span>
-        </button>
-      );
-    }
-
-    function Badge({ type }) {
-      const styles = {
-        'Ketua RW': 'bg-blue-100 text-blue-800 border-blue-200',
-        'Ketua RT 13': 'bg-teal-100 text-teal-800 border-teal-200',
-        'Ketua RT 14': 'bg-emerald-100 text-emerald-800 border-emerald-200',
-        'Warga pendatang': 'bg-amber-100 text-amber-800 border-amber-200',
-        'Lansia': 'bg-purple-100 text-purple-800 border-purple-200',
-        'Anak yatim': 'bg-rose-100 text-rose-800 border-rose-200',
-        'Darurat': 'bg-red-500 text-white animate-pulse border-red-600',
-      };
-      if (!styles[type]) return null;
-      return <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${styles[type]}`}>{type}</span>;
-    }
-
-    function LoginScreen({ onLogin, passwords }) {
-      const [username, setUsername] = useState('');
-      const [password, setPassword] = useState('');
-      const [error, setError] = useState('');
-
-      const handleAdminLogin = (e) => {
-        e.preventDefault();
-        setError('');
-        if (username === 'admin' && password === passwords.superadmin) onLogin({ role: 'superadmin' });
-        else if (username === 'RW' && password === passwords.rw) onLogin({ role: 'rw' });
-        else if (username === 'RT13' && password === passwords.rt13) onLogin({ role: 'rt13' });
-        else if (username === 'RT14' && password === passwords.rt14) onLogin({ role: 'rt14' });
-        else setError('Username atau password salah!');
-      };
-
-      return (
-        <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-md border border-slate-100">
-            <div className="bg-gradient-to-br from-blue-700 to-blue-500 p-8 text-center text-white">
-              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 shadow-lg">
-                 <IconUsers size={40} />
-              </div>
-              <h1 className="text-xl font-bold mb-1">Sistem Informasi Terpadu Warga Jakun</h1>
-              <p className="text-sm text-blue-100 italic">RW 07 (RT 13 & RT 14)</p>
-            </div>
-            
-            <div className="p-6 space-y-6">
-              <button onClick={() => onLogin({ role: 'warga' })} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
-                <IconUsers size={18} />
-                <span>Masuk sebagai Warga (Tanpa Login)</span>
-              </button>
-
-              <div className="relative flex py-2 items-center">
-                <div className="flex-grow border-t border-slate-200"></div>
-                <span className="flex-shrink-0 mx-4 text-slate-400 text-xs font-semibold uppercase">Akses Admin / Pengurus</span>
-                <div className="flex-grow border-t border-slate-200"></div>
-              </div>
-
-              <form onSubmit={handleAdminLogin} className="space-y-4">
-                {error && <div className="text-red-500 text-xs text-center bg-red-50 border border-red-200 p-2.5 rounded-lg">{error}</div>}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Username Admin</label>
-                  <input type="text" placeholder="admin / RW / RT13 / RT14" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 text-sm" value={username} onChange={(e) => setUsername(e.target.value)} required />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Password</label>
-                  <input type="password" placeholder="Password" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 text-sm" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                </div>
-                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition">
-                  Masuk Admin
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    function Beranda({ warga, pengumuman, kegiatan, pengurus, keuangan, laporan, user, setPengumuman, setKegiatan, onZoomImage, sendDataToGSheet }) {
-      const currentMonth = new Date().getMonth();
-      const currentDate = new Date().getDate();
-
-      const saldoWajib = keuangan.filter(k => k.jenis_kas === 'Wajib').reduce((acc, curr) => curr.tipe === 'Masuk' ? acc + Number(curr.nominal) : acc - Number(curr.nominal), 0);
-      const saldoLain = keuangan.filter(k => k.jenis_kas === 'Lain-lain').reduce((acc, curr) => curr.tipe === 'Masuk' ? acc + Number(curr.nominal) : acc - Number(curr.nominal), 0);
-      const totalSaldo = saldoWajib + saldoLain;
-
-      const ultahWarga = warga.filter(w => {
-        if(!w.tglLahir || w.meninggal) return false;
-        const tgl = new Date(w.tglLahir);
-        return tgl.getMonth() === currentMonth;
-      });
-
-      const handleDeletePengumuman = (id) => {
-        if (window.confirm("Hapus pengumuman ini?")) {
-          setPengumuman(prev => prev.filter(p => p.id !== id));
-          sendDataToGSheet('deleteItem', { sheetName: 'Pengumuman', id });
+        function renderStatistik() {
+            document.getElementById('stat-total-jiwa').innerText = storeWarga.length;
+            document.getElementById('stat-total-kk').innerText = new Set(storeWarga.map(w => w.nokk)).size;
+            document.getElementById('stat-tetap').innerText = storeWarga.filter(w => w.status === 'Tetap').length;
+            document.getElementById('stat-pendatang').innerText = storeWarga.filter(w => w.status === 'Pendatang').length;
+            document.getElementById('stat-total-yatim').innerText = storeWarga.filter(w => w.yatim || (w.statusAyah==='Meninggal' && calculateAge(w.tgl)<17)).length;
         }
-      };
 
-      const handleDeleteKegiatan = (id) => {
-        if (window.confirm("Hapus kegiatan ini?")) {
-          setKegiatan(prev => prev.filter(k => k.id !== id));
-          sendDataToGSheet('deleteItem', { sheetName: 'Kegiatan', id });
+        function renderKeuangan() {
+            const tbody = document.getElementById('table-keuangan-body');
+            tbody.innerHTML = '';
+            let total = 0;
+            storeKeuangan.forEach(k => {
+                if(k.tipe==='Pemasukan') total += k.nominal; else total -= k.nominal;
+                tbody.innerHTML += `<tr class="border-b"><td class="p-2">${k.tgl}</td><td class="p-2">${k.jenis}</td><td class="p-2 font-bold ${k.tipe==='Pemasukan'?'text-emerald-600':'text-rose-600'}">${k.tipe}</td><td class="p-2">${k.ket}</td><td class="p-2 text-right font-bold">Rp ${k.nominal.toLocaleString('id-ID')}</td></tr>`;
+            });
+            document.getElementById('saldo-total').innerText = `Rp ${total.toLocaleString('id-ID')}`;
         }
-      };
 
-      const isAdmin = user.role !== 'warga';
-
-      return (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gradient-to-br from-blue-700 to-blue-900 text-white rounded-2xl p-5 shadow-md relative overflow-hidden flex flex-col justify-between">
-              <IconDollar className="absolute right-[-20px] top-[-20px] text-blue-400 opacity-20 w-36 h-36" />
-              <div>
-                <p className="text-blue-100 text-xs font-semibold uppercase tracking-wider mb-1">Saldo Kas Terseedia (RW 07)</p>
-                <h2 className="text-3xl font-extrabold">{formatRupiah(totalSaldo)}</h2>
-              </div>
-              <div className="mt-4 pt-3 border-t border-blue-500/30 flex justify-between text-xs text-blue-200">
-                <span>Kas Wajib: {formatRupiah(saldoWajib)}</span>
-                <span>Lain-lain: {formatRupiah(saldoLain)}</span>
-              </div>
-            </div>
-
-            {laporan.filter(l => l.darurat).length > 0 ? (
-              laporan.filter(l => l.darurat).map(l => (
-                <div key={l.id} className="bg-red-50 border border-red-200 rounded-2xl p-4 shadow-sm flex items-start space-x-3">
-                  <div className="bg-red-100 p-2.5 rounded-full text-red-600 flex-shrink-0">
-                    <IconAlert size={22} />
-                  </div>
-                  <div className="flex-grow">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <h3 className="font-bold text-red-700 text-sm">Laporan Darurat</h3>
-                      <Badge type="Darurat" />
-                    </div>
-                    <p className="text-xs text-slate-700 line-clamp-2">{l.uraian}</p>
-                    <p className="text-[11px] text-red-500 font-medium mt-1">Lokasi: {l.lokasi}</p>
-                    {l.foto && (
-                      <div className="mt-2 relative inline-block group cursor-pointer" onClick={() => onZoomImage(l.foto)}>
-                        <img src={l.foto} alt="Bukti Laporan" className="w-16 h-16 object-cover rounded-lg border border-red-200" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm flex items-center justify-center text-center">
-                <p className="text-xs text-slate-400 italic">Tidak ada laporan darurat aktif saat ini.</p>
-              </div>
-            )}
-          </div>
-
-          {/* Blok Pengurus RW, RT 13, RT 14 */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-            <h3 className="font-bold text-slate-800 mb-3 flex items-center text-sm uppercase tracking-wide">
-              <IconUsers size={18} className="mr-2 text-blue-600"/> Susunan Pengurus RW & RT
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="bg-blue-50/70 p-3.5 rounded-xl border border-blue-100">
-                <span className="text-[10px] font-bold text-blue-700 uppercase bg-blue-100 px-2 py-0.5 rounded">Ketua RW 07</span>
-                <p className="font-bold text-slate-800 text-sm mt-2">{pengurus.rw?.nama || '-'}</p>
-                <p className="text-xs text-slate-600 mt-0.5">WA: <a href={`https://wa.me/${pengurus.rw?.wa}`} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">{pengurus.rw?.wa || '-'}</a></p>
-              </div>
-              <div className="bg-teal-50/70 p-3.5 rounded-xl border border-teal-100">
-                <span className="text-[10px] font-bold text-teal-700 uppercase bg-teal-100 px-2 py-0.5 rounded">Ketua RT 13</span>
-                <p className="font-bold text-slate-800 text-sm mt-2">{pengurus.rt13?.nama || '-'}</p>
-                <p className="text-xs text-slate-600 mt-0.5">WA: <a href={`https://wa.me/${pengurus.rt13?.wa}`} target="_blank" rel="noreferrer" className="text-teal-600 hover:underline">{pengurus.rt13?.wa || '-'}</a></p>
-              </div>
-              <div className="bg-emerald-50/70 p-3.5 rounded-xl border border-emerald-100">
-                <span className="text-[10px] font-bold text-emerald-700 uppercase bg-emerald-100 px-2 py-0.5 rounded">Ketua RT 14</span>
-                <p className="font-bold text-slate-800 text-sm mt-2">{pengurus.rt14?.nama || '-'}</p>
-                <p className="text-xs text-slate-600 mt-0.5">WA: <a href={`https://wa.me/${pengurus.rt14?.wa}`} target="_blank" rel="noreferrer" className="text-emerald-600 hover:underline">{pengurus.rt14?.wa || '-'}</a></p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-5 shadow-sm text-white">
-            <h3 className="font-bold mb-3 flex items-center text-sm uppercase tracking-wide">
-              🎈 Warga Ulang Tahun Bulan Ini
-            </h3>
-            {ultahWarga.length === 0 ? (
-              <p className="text-xs text-orange-100 italic">Tidak ada warga yang berulang tahun di bulan ini.</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {ultahWarga.map(w => {
-                  const tgl = new Date(w.tglLahir);
-                  const isToday = tgl.getDate() === currentDate;
-                  return (
-                    <div key={w.id} className="bg-white/15 p-3 rounded-xl backdrop-blur-sm flex justify-between items-center border border-white/20">
-                      <div>
-                        <p className="font-bold text-sm">{w.nama}</p>
-                        <p className="text-xs text-orange-100">RT {w.rt} • Tanggal {tgl.getDate()}</p>
-                      </div>
-                      {isToday && (
-                        <span className="text-[11px] bg-yellow-300 text-orange-900 font-extrabold px-2.5 py-1 rounded-full animate-bounce shadow">
-                          Selamat Ulang Tahun! 🎂
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-              <h3 className="font-bold text-slate-800 mb-3 text-sm uppercase tracking-wide">📢 Pengumuman Bulan Ini</h3>
-              {pengumuman.length === 0 ? <p className="text-xs text-slate-400 italic">Belum ada pengumuman.</p> : (
-                <div className="space-y-3">
-                  {pengumuman.map(p => (
-                    <div key={p.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                      <div className="flex justify-between items-start">
-                        <h4 className="font-semibold text-sm text-slate-800">{p.judul}</h4>
-                        {isAdmin && <button onClick={() => handleDeletePengumuman(p.id)} className="text-red-500"><IconTrash size={14}/></button>}
-                      </div>
-                      <p className="text-[10px] text-slate-400 mb-1">{p.tanggal}</p>
-                      <p className="text-xs text-slate-600">{p.uraian}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-              <h3 className="font-bold text-slate-800 mb-3 text-sm uppercase tracking-wide">📅 Kegiatan Bulan Ini</h3>
-              {kegiatan.length === 0 ? <p className="text-xs text-slate-400 italic">Belum ada kegiatan.</p> : (
-                <div className="space-y-3">
-                  {kegiatan.map(k => (
-                    <div key={k.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex space-x-3 items-center justify-between">
-                      <div className="flex space-x-3 items-center">
-                        {k.foto ? (
-                          <img src={k.foto} alt={k.nama} className="w-14 h-14 object-cover rounded-xl cursor-pointer" onClick={() => onZoomImage(k.foto)} />
-                        ) : (
-                          <div className="bg-orange-100 text-orange-600 p-2 rounded-xl text-center min-w-[48px]">
-                            <p className="text-base font-bold leading-none">{new Date(k.tanggal).getDate()}</p>
-                            <p className="text-[9px] uppercase font-semibold mt-0.5">{new Date(k.tanggal).toLocaleString('id-ID', { month: 'short' })}</p>
-                          </div>
-                        )}
-                        <div>
-                          <h4 className="font-semibold text-sm text-slate-800">{k.nama}</h4>
-                          <p className="text-xs text-slate-500 mt-0.5">{k.tanggal}</p>
-                        </div>
-                      </div>
-                      {isAdmin && <button onClick={() => handleDeleteKegiatan(k.id)} className="text-red-500"><IconTrash size={14}/></button>}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    function DataWarga({ data, user, setWarga, pengurus, sendDataToGSheet }) {
-      const [search, setSearch] = useState('');
-      const [filterRT, setFilterRT] = useState('Semua');
-      const [filterStatus, setFilterStatus] = useState('Semua');
-      const [filterLansia, setFilterLansia] = useState(false);
-      const [filterYatim, setFilterYatim] = useState(false);
-
-      const dataGrouped = useMemo(() => {
-        let filtered = data.filter(w => !w.meninggal); 
-        if (search) filtered = filtered.filter(w => w.nama.toLowerCase().includes(search.toLowerCase()));
-        if (filterRT !== 'Semua') filtered = filtered.filter(w => String(w.rt) === filterRT);
-        if (filterStatus !== 'Semua') filtered = filtered.filter(w => w.status === filterStatus);
-        if (filterLansia) filtered = filtered.filter(w => w.lansia);
-        if (filterYatim) filtered = filtered.filter(w => w.yatim);
-
-        const grouped = {};
-        filtered.forEach(w => {
-          if (!grouped[w.no_kk]) grouped[w.no_kk] = [];
-          grouped[w.no_kk].push(w);
-        });
-        return grouped;
-      }, [data, search, filterRT, filterStatus, filterLansia, filterYatim]);
-
-      const handleDelete = (id) => {
-        if(window.confirm("Hapus warga ini dari daftar?")) {
-          setWarga(warga => warga.filter(w => w.id !== id));
-          sendDataToGSheet('deleteItem', { sheetName: 'Warga', id });
+        function renderLaporan() {
+            const container = document.getElementById('container-laporan');
+            container.innerHTML = '';
+            storeLaporan.forEach(l => {
+                container.innerHTML += `<div class="bg-white p-3 rounded-xl border text-xs space-y-1"><div class="flex justify-between font-bold"><span>${l.nama} (${l.jenis})</span><span class="text-blue-600">${l.status}</span></div><p>${l.uraian}</p><div class="text-[10px] text-slate-400">Lokasi: ${l.lokasi}</div></div>`;
+            });
         }
-      };
 
-      const handleToggleStatus = (id, field) => {
-        setWarga(warga => warga.map(w => w.id === id ? { ...w, [field]: !w[field] } : w));
-      };
-
-      const getBadges = (w) => {
-        const badges = [];
-        if(w.nama === pengurus.rw?.nama) badges.push('Ketua RW');
-        if(w.nama === pengurus.rt13?.nama) badges.push('Ketua RT 13');
-        if(w.nama === pengurus.rt14?.nama) badges.push('Ketua RT 14');
-        if(w.status === 'Pendatang') badges.push('Warga pendatang');
-        if(w.lansia) badges.push('Lansia');
-        if(w.yatim) badges.push('Anak yatim');
-        return badges;
-      };
-
-      const isAdmin = user.role !== 'warga';
-      const canEditRT13 = user.role === 'superadmin' || user.role === 'rw' || user.role === 'rt13';
-      const canEditRT14 = user.role === 'superadmin' || user.role === 'rw' || user.role === 'rt14';
-
-      return (
-        <div className="space-y-4">
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-3">
-            <div className="relative">
-              <IconSearch className="absolute left-3 top-3 text-slate-400" size={18} />
-              <input type="text" placeholder="Cari nama warga..." className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-xl text-sm" value={search} onChange={e => setSearch(e.target.value)} />
-            </div>
-            
-            <div className="flex flex-wrap gap-2 items-center text-xs">
-              <span className="font-bold text-slate-500 flex items-center mr-1"><IconFilter size={14} className="mr-1"/> Filter:</span>
-              <select className="bg-slate-50 border rounded-lg px-2.5 py-1.5" value={filterRT} onChange={e => setFilterRT(e.target.value)}>
-                <option value="Semua">Semua RT</option>
-                <option value="13">RT 13</option>
-                <option value="14">RT 14</option>
-              </select>
-              <select className="bg-slate-50 border rounded-lg px-2.5 py-1.5" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
-                <option value="Semua">Semua Status</option>
-                <option value="Tetap">Warga Tetap</option>
-                <option value="Pendatang">Warga Pendatang</option>
-              </select>
-              <label className="flex items-center space-x-1 cursor-pointer bg-slate-50 px-2.5 py-1.5 rounded-lg border">
-                <input type="checkbox" checked={filterLansia} onChange={e => setFilterLansia(e.target.checked)} />
-                <span>Lansia</span>
-              </label>
-              <label className="flex items-center space-x-1 cursor-pointer bg-slate-50 px-2.5 py-1.5 rounded-lg border">
-                <input type="checkbox" checked={filterYatim} onChange={e => setFilterYatim(e.target.checked)} />
-                <span>Anak Yatim</span>
-              </label>
-            </div>
-          </div>
-
-          {Object.keys(dataGrouped).length === 0 ? (
-            <div className="text-center text-slate-400 py-12 bg-white rounded-2xl border text-sm">Data warga tidak ditemukan.</div>
-          ) : (
-            Object.entries(dataGrouped).map(([kk, anggota]) => {
-              const kepala = anggota.find(a => a.peran === 'Kepala Keluarga') || anggota[0];
-              return (
-                <div key={kk} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100">
-                  <div className="bg-blue-50/60 px-4 py-3 border-b flex justify-between items-center">
-                    <h3 className="font-bold text-slate-800 text-sm">Keluarga Bpk/Ibu {kepala.nama}</h3>
-                    <span className="text-xs bg-blue-600 text-white px-2.5 py-0.5 rounded-full font-bold">RT {kepala.rt}</span>
-                  </div>
-                  
-                  <div className="divide-y divide-slate-100">
-                    {anggota.map(w => {
-                      const hasEditAccess = isAdmin && ((String(w.rt) === '13' && canEditRT13) || (String(w.rt) === '14' && canEditRT14));
-                      return (
-                        <div key={w.id} className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                          <div>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <p className="font-bold text-slate-800 text-sm">{w.nama}</p>
-                              {getBadges(w).map(b => <Badge key={b} type={b} />)}
-                            </div>
-                            <p className="text-xs text-slate-500 mt-1">Peran: {w.peran} • WA: {w.noWa}</p>
-                          </div>
-
-                          {hasEditAccess && (
-                            <div className="flex items-center gap-1.5 justify-end w-full sm:w-auto">
-                              <button onClick={() => handleToggleStatus(w.id, 'yatim')} className={`text-[11px] px-2 py-1 rounded border ${w.yatim ? 'bg-rose-100 text-rose-700' : 'bg-slate-50'}`}>
-                                {w.yatim ? 'Batal Yatim' : '+ Yatim'}
-                              </button>
-                              <button onClick={() => { if(confirm(`Tandai ${w.nama} meninggal?`)) handleToggleStatus(w.id, 'meninggal'); }} className="text-[11px] px-2 py-1 rounded bg-slate-100">
-                                Meninggal
-                              </button>
-                              <button onClick={() => handleDelete(w.id)} className="text-red-500 bg-red-50 p-1.5 rounded"><IconTrash size={13}/></button>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      );
-    }
-
-    function Statistik({ data }) {
-      const currentYear = new Date().getFullYear();
-      const currentMonth = new Date().getMonth();
-
-      const wargaAktif = data.filter(w => !w.meninggal);
-
-      const kkRT13 = new Set(wargaAktif.filter(w => String(w.rt) === '13').map(w => w.no_kk)).size;
-      const kkRT14 = new Set(wargaAktif.filter(w => String(w.rt) === '14').map(w => w.no_kk)).size;
-      const totalKK = kkRT13 + kkRT14;
-
-      const wargaRT13 = wargaAktif.filter(w => String(w.rt) === '13').length;
-      const wargaRT14 = wargaAktif.filter(w => String(w.rt) === '14').length;
-      const totalWarga = wargaRT13 + wargaRT14;
-
-      const tetapRT13 = wargaAktif.filter(w => String(w.rt) === '13' && w.status === 'Tetap').length;
-      const pendatangRT13 = wargaAktif.filter(w => String(w.rt) === '13' && w.status === 'Pendatang').length;
-      const tetapRT14 = wargaAktif.filter(w => String(w.rt) === '14' && w.status === 'Tetap').length;
-      const pendatangRT14 = wargaAktif.filter(w => String(w.rt) === '14' && w.status === 'Pendatang').length;
-
-      const yatimRT13 = wargaAktif.filter(w => String(w.rt) === '13' && w.yatim).length;
-      const yatimRT14 = wargaAktif.filter(w => String(w.rt) === '14' && w.yatim).length;
-      const totalYatim = yatimRT13 + yatimRT14;
-
-      let balita=0, anak=0, remaja=0, dewasa=0, lansia=0;
-      wargaAktif.forEach(w => {
-        if(!w.tglLahir) return;
-        const umur = currentYear - new Date(w.tglLahir).getFullYear();
-        if(umur <= 4) balita++;
-        else if(umur <= 11) anak++;
-        else if(umur <= 25) remaja++;
-        else if(umur < 65) dewasa++;
-        else lansia++;
-      });
-
-      const kematianBulanIni = data.filter(w => w.meninggal).length; 
-      const kelahiranBulanIni = data.filter(w => {
-        if(!w.tglLahir) return false;
-        const d = new Date(w.tglLahir);
-        return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
-      }).length;
-
-      return (
-        <div className="space-y-6">
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-4">
-            <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wide border-b pb-2">📊 Ringkasan Jumlah KK & Warga (RW 07)</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3.5 text-center">
-                <p className="text-xs text-blue-600 font-bold uppercase">Total RW 07</p>
-                <p className="text-2xl font-extrabold text-blue-900 mt-1">{totalKK} <span className="text-xs font-normal">KK</span> / {totalWarga} <span className="text-xs font-normal">Jiwa</span></p>
-              </div>
-              <div className="bg-teal-50 border border-teal-200 rounded-xl p-3.5 text-center">
-                <p className="text-xs text-teal-600 font-bold uppercase">RT 13</p>
-                <p className="text-2xl font-extrabold text-teal-900 mt-1">{kkRT13} <span className="text-xs font-normal">KK</span> / {wargaRT13} <span className="text-xs font-normal">Jiwa</span></p>
-              </div>
-              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 text-center">
-                <p className="text-xs text-emerald-600 font-bold uppercase">RT 14</p>
-                <p className="text-2xl font-extrabold text-emerald-900 mt-1">{kkRT14} <span className="text-xs font-normal">KK</span> / {wargaRT14} <span className="text-xs font-normal">Jiwa</span></p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-            <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wide mb-3">🏠 Status Warga (Tetap vs Pendatang)</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left text-slate-600">
-                <thead className="bg-slate-50 font-bold uppercase">
-                  <tr>
-                    <th className="p-2.5">Wilayah</th>
-                    <th className="p-2.5">Warga Tetap</th>
-                    <th className="p-2.5">Warga Pendatang</th>
-                    <th className="p-2.5">Total Warga</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  <tr><td className="p-2.5 font-medium">RT 13</td><td className="p-2.5">{tetapRT13} jiwa</td><td className="p-2.5">{pendatangRT13} jiwa</td><td className="p-2.5 font-bold">{wargaRT13} jiwa</td></tr>
-                  <tr><td className="p-2.5 font-medium">RT 14</td><td className="p-2.5">{tetapRT14} jiwa</td><td className="p-2.5">{pendatangRT14} jiwa</td><td className="p-2.5 font-bold">{wargaRT14} jiwa</td></tr>
-                  <tr className="bg-blue-50/50 font-bold text-blue-900"><td className="p-2.5">Total RW 07</td><td className="p-2.5">{tetapRT13+tetapRT14} jiwa</td><td className="p-2.5">{pendatangRT13+pendatangRT14} jiwa</td><td className="p-2.5">{totalWarga} jiwa</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-            <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wide mb-3 flex items-center">
-              <IconHeart size={16} className="mr-1.5 text-rose-500" /> Jumlah Anak Yatim
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="bg-rose-50 border border-rose-200 rounded-xl p-3.5 text-center">
-                <p className="text-xs text-rose-700 font-bold uppercase">Total RW 07</p>
-                <p className="text-2xl font-extrabold text-rose-900 mt-1">{totalYatim} <span className="text-xs font-normal">Anak</span></p>
-              </div>
-              <div className="bg-slate-50 border rounded-xl p-3.5 text-center">
-                <p className="text-xs text-slate-600 font-bold uppercase">RT 13</p>
-                <p className="text-xl font-extrabold text-slate-800 mt-1">{yatimRT13} <span className="text-xs font-normal">Anak</span></p>
-              </div>
-              <div className="bg-slate-50 border rounded-xl p-3.5 text-center">
-                <p className="text-xs text-slate-600 font-bold uppercase">RT 14</p>
-                <p className="text-xl font-extrabold text-slate-800 mt-1">{yatimRT14} <span className="text-xs font-normal">Anak</span></p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-            <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wide mb-4">👶 Kelompok Usia Warga</h3>
-            <div className="space-y-3">
-              {[
-                { label: 'Balita (0-4 thn)', val: balita, color: 'bg-pink-500' },
-                { label: 'Anak-Anak (5-11 thn)', val: anak, color: 'bg-amber-400' },
-                { label: 'Remaja (12-25 thn)', val: remaja, color: 'bg-emerald-500' },
-                { label: 'Dewasa (26-64 thn)', val: dewasa, color: 'bg-blue-500' },
-                { label: 'Lansia (65+ thn)', val: lansia, color: 'bg-purple-500' },
-              ].map(item => (
-                <div key={item.label} className="flex items-center text-xs">
-                  <div className="w-36 font-semibold text-slate-700">{item.label}</div>
-                  <div className="flex-grow bg-slate-100 rounded-full h-3 mx-2 overflow-hidden">
-                    <div className={`${item.color} h-3 rounded-full`} style={{ width: `${Math.max(5, (item.val / (totalWarga||1)) * 100)}%`}}></div>
-                  </div>
-                  <div className="w-12 text-right font-bold text-slate-800">{item.val} jiwa</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-green-50 border border-green-200 rounded-2xl p-4 shadow-sm text-center">
-              <p className="text-xs text-green-700 font-bold uppercase">Kelahiran Bulan Ini</p>
-              <p className="text-3xl font-extrabold text-green-800 mt-1">{kelahiranBulanIni}</p>
-            </div>
-            <div className="bg-red-50 border border-red-200 rounded-2xl p-4 shadow-sm text-center">
-              <p className="text-xs text-red-700 font-bold uppercase">Kematian Bulan Ini</p>
-              <p className="text-3xl font-extrabold text-red-800 mt-1">{kematianBulanIni}</p>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    function WargaMelapor({ laporan, setLaporan, user, onZoomImage, sendDataToGSheet }) {
-      const [formData, setFormData] = useState({ pelapor: '', jenis: 'Keamanan', uraian: '', lokasi: '', darurat: false, foto: null });
-
-      const handlePhotoUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onloadend = () => setFormData({ ...formData, foto: reader.result });
-          reader.readAsDataURL(file);
+        function renderPengumuman() {
+            const listP = document.getElementById('list-pengumuman');
+            listP.innerHTML = '';
+            storePengumuman.forEach(p => {
+                listP.innerHTML += `<div class="bg-white p-3 rounded-xl border text-xs"><span class="text-[10px] font-bold text-blue-600">${p.tgl}</span><h4 class="font-bold">${p.judul}</h4><p>${p.uraian}</p></div>`;
+            });
         }
-      };
 
-      const handleSubmit = (e) => {
-        e.preventDefault();
-        const newLaporan = { ...formData, id: Date.now(), status: 'Dalam Pengecekan', tanggal: new Date().toISOString().split('T')[0] };
-        setLaporan([newLaporan, ...laporan]);
-        sendDataToGSheet('addLaporan', newLaporan);
-        setFormData({ pelapor: '', jenis: 'Keamanan', uraian: '', lokasi: '', darurat: false, foto: null });
-        alert("Laporan Anda berhasil terkirim!");
-      };
-
-      const updateStatus = (id, newStatus) => {
-        setLaporan(laporan.map(l => l.id === id ? { ...l, status: newStatus } : l));
-        sendDataToGSheet('updateLaporanStatus', { id, status: newStatus });
-      };
-
-      return (
-        <div className="space-y-6">
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-            <h3 className="font-bold text-slate-800 mb-4 flex items-center text-sm uppercase tracking-wide">
-              <IconAlert className="mr-2 text-orange-500" size={18}/> Form Pengaduan / Laporan Warga
-            </h3>
-            <form onSubmit={handleSubmit} className="space-y-3 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Nama Pelapor</label>
-                  <input required type="text" placeholder="Nama Anda" className="w-full bg-slate-50 border rounded-xl px-3 py-2.5 text-xs" value={formData.pelapor} onChange={e => setFormData({...formData, pelapor: e.target.value})} />
-                </div>
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Jenis Laporan</label>
-                  <select className="w-full bg-slate-50 border rounded-xl px-3 py-2.5 text-xs" value={formData.jenis} onChange={e => setFormData({...formData, jenis: e.target.value})}>
-                    <option>Keamanan</option><option>Fasilitas</option><option>Kebersihan</option><option>Lainnya</option>
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Lokasi Kejadian</label>
-                <input required type="text" placeholder="Dekat pos Ronda RT 13" className="w-full bg-slate-50 border rounded-xl px-3 py-2.5 text-xs" value={formData.lokasi} onChange={e => setFormData({...formData, lokasi: e.target.value})} />
-              </div>
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Uraian Laporan</label>
-                <textarea required rows="3" placeholder="Jelaskan detail pengaduan..." className="w-full bg-slate-50 border rounded-xl px-3 py-2.5 text-xs" value={formData.uraian} onChange={e => setFormData({...formData, uraian: e.target.value})}></textarea>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Foto Lokasi (Opsional)</label>
-                  <input type="file" accept="image/*" onChange={handlePhotoUpload} className="text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700" />
-                </div>
-                <label className="flex items-center space-x-2 bg-red-50 text-red-700 px-3 py-2 rounded-xl border border-red-200 cursor-pointer">
-                  <input type="checkbox" checked={formData.darurat} onChange={e => setFormData({...formData, darurat: e.target.checked})} className="w-4 h-4 text-red-600 rounded" />
-                  <span className="font-bold text-xs">Tandai Laporan Darurat!</span>
-                </label>
-              </div>
-
-              <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-md transition text-xs mt-2">
-                Kirim Laporan
-              </button>
-            </form>
-          </div>
-
-          <div className="space-y-3">
-            <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wide">Daftar Laporan Warga</h3>
-            {laporan.map(l => (
-              <div key={l.id} className={`bg-white rounded-2xl p-4 shadow-sm border-l-4 ${l.darurat ? 'border-red-500' : 'border-blue-500'} space-y-2`}>
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-slate-800 text-sm">{l.jenis}</span>
-                    {l.darurat && <Badge type="Darurat" />}
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-100">{l.status}</span>
-                  </div>
-                  <span className="text-[10px] text-slate-400">{l.tanggal}</span>
-                </div>
-                <p className="text-xs text-slate-700 leading-relaxed">{l.uraian}</p>
-                {l.foto && <img src={l.foto} alt="Foto" className="w-24 h-24 object-cover rounded-xl border cursor-pointer" onClick={() => onZoomImage(l.foto)} />}
-                <div className="text-[11px] text-slate-500 pt-1 border-t">Pelapor: {l.pelapor} • Lokasi: {l.lokasi}</div>
-
-                {user.role !== 'warga' && (
-                  <div className="pt-2 flex gap-1.5 justify-end">
-                    <button onClick={() => updateStatus(l.id, 'Dalam Pengecekan')} className="text-[10px] bg-amber-50 text-amber-700 px-2.5 py-1 rounded border">Pengecekan</button>
-                    <button onClick={() => updateStatus(l.id, 'Sedang diKerjakan')} className="text-[10px] bg-blue-50 text-blue-700 px-2.5 py-1 rounded border">Kerjakan</button>
-                    <button onClick={() => updateStatus(l.id, 'Selesai')} className="text-[10px] bg-green-50 text-green-700 px-2.5 py-1 rounded border">Selesai</button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
-
-    function Keuangan({ keuangan }) {
-      const getSaldo = (jenis) => keuangan.filter(k => k.jenis_kas === jenis).reduce((acc, curr) => curr.tipe === 'Masuk' ? acc + Number(curr.nominal) : acc - Number(curr.nominal), 0);
-      const saldoWajib = getSaldo('Wajib');
-      const saldoLain = getSaldo('Lain-lain');
-      const total = saldoWajib + saldoLain;
-
-      const renderRincianPengeluaran = (jenis) => {
-        const pengeluaranList = keuangan.filter(k => k.jenis_kas === jenis && k.tipe === 'Keluar');
-        const totalPemasukan = keuangan.filter(k => k.jenis_kas === jenis && k.tipe === 'Masuk').reduce((a, b) => a + Number(b.nominal), 0);
-
-        return (
-          <div className="mt-3 text-xs space-y-2">
-            <div className="bg-slate-50 p-2.5 rounded-lg flex justify-between font-medium text-slate-700">
-              <span>Total Pemasukan (Global):</span>
-              <span className="text-green-600 font-bold">{formatRupiah(totalPemasukan)}</span>
-            </div>
-
-            <div>
-              <p className="font-bold text-slate-700 mb-1.5">Rincian Pengeluaran:</p>
-              {pengeluaranList.length === 0 ? <p className="text-[11px] text-slate-400 italic">Belum ada pengeluaran.</p> : (
-                <ul className="space-y-1.5">
-                  {pengeluaranList.map(k => (
-                    <li key={k.id} className="flex justify-between items-center p-2 bg-red-50/50 rounded-lg border border-red-100">
-                      <div>
-                        <p className="font-medium text-slate-800">{k.keterangan}</p>
-                        <p className="text-[9px] text-slate-400">{k.tanggal}</p>
-                      </div>
-                      <span className="font-bold text-red-600">-{formatRupiah(k.nominal)}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-        );
-      };
-
-      return (
-        <div className="space-y-4">
-          <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-2xl p-6 text-white text-center shadow-md">
-            <p className="text-blue-200 text-xs font-semibold uppercase tracking-wider mb-1">Total Saldo Kas Terseedia</p>
-            <h2 className="text-3xl font-extrabold">{formatRupiah(total)}</h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-              <div className="flex justify-between items-center border-b pb-2">
-                <div><h3 className="font-bold text-slate-800 text-sm">Iuran Wajib</h3><p className="text-[10px] text-slate-400">Sisa Kas Wajib</p></div>
-                <span className="text-blue-700 font-extrabold text-base">{formatRupiah(saldoWajib)}</span>
-              </div>
-              {renderRincianPengeluaran('Wajib')}
-            </div>
-
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-              <div className="flex justify-between items-center border-b pb-2">
-                <div><h3 className="font-bold text-slate-800 text-sm">Iuran Lain-Lain</h3><p className="text-[10px] text-slate-400">Sisa Kas Lainnya</p></div>
-                <span className="text-orange-600 font-extrabold text-base">{formatRupiah(saldoLain)}</span>
-              </div>
-              {renderRincianPengeluaran('Lain-lain')}
-            </div>
-          </div>
-
-          <div className="bg-orange-50 border border-orange-200 rounded-xl p-3.5 text-center">
-            <p className="text-xs text-orange-900 font-semibold">Informasi lebih lanjut silahkan hubungi Bendahara.</p>
-          </div>
-        </div>
-      );
-    }
-
-    function FiturAdmin({ user, warga, pengumuman, kegiatan, pengurus, passwords, setPengumuman, setKegiatan, setKeuangan, setPengurus, setPasswords, sendDataToGSheet }) {
-      const [nominalDisplay, setNominalDisplay] = useState('');
-      const [nominalRaw, setNominalRaw] = useState(0);
-      const [jenisKas, setJenisKas] = useState('Wajib');
-      const [tipeTx, setTipeTx] = useState('Masuk');
-      const [penyetorTx, setPenyetorTx] = useState('');
-      const [keteranganTx, setKeteranganTx] = useState('');
-
-      const [namaKegiatan, setNamaKegiatan] = useState('');
-      const [tglKegiatan, setTglKegiatan] = useState('');
-      const [fotoKegiatan, setFotoKegiatan] = useState(null);
-
-      const [showSettingsModal, setShowSettingsModal] = useState(false);
-      const [selectedRW, setSelectedRW] = useState('');
-      const [selectedRT13, setSelectedRT13] = useState('');
-      const [selectedRT14, setSelectedRT14] = useState('');
-
-      const [passSuper, setPassSuper] = useState(passwords.superadmin || 'jakun123');
-      const [passRW, setPassRW] = useState(passwords.rw || 'jakun321');
-      const [passRT13, setPassRT13] = useState(passwords.rt13 || 'jakun321');
-      const [passRT14, setPassRT14] = useState(passwords.rt14 || 'jakun321');
-
-      // Daftar warga per RT untuk opsi dropdown
-      const listWargaRW = useMemo(() => warga, [warga]);
-      const listWargaRT13 = useMemo(() => {
-        const filtered = warga.filter(w => String(w.rt).includes('13'));
-        return filtered.length > 0 ? filtered : warga;
-      }, [warga]);
-      const listWargaRT14 = useMemo(() => {
-        const filtered = warga.filter(w => String(w.rt).includes('14'));
-        return filtered.length > 0 ? filtered : warga;
-      }, [warga]);
-
-      // Mengisi state dropdown saat modal dibuka
-      useEffect(() => {
-        if (showSettingsModal) {
-          const currentRW = pengurus.rw?.nama && listWargaRW.some(w => w.nama === pengurus.rw.nama)
-            ? pengurus.rw.nama : (listWargaRW[0]?.nama || '');
-          
-          const currentRT13 = pengurus.rt13?.nama && listWargaRT13.some(w => w.nama === pengurus.rt13.nama)
-            ? pengurus.rt13.nama : (listWargaRT13[0]?.nama || '');
-          
-          const currentRT14 = pengurus.rt14?.nama && listWargaRT14.some(w => w.nama === pengurus.rt14.nama)
-            ? pengurus.rt14.nama : (listWargaRT14[0]?.nama || '');
-
-          setSelectedRW(currentRW);
-          setSelectedRT13(currentRT13);
-          setSelectedRT14(currentRT14);
+        async function sendLaporan(e) {
+            e.preventDefault();
+            showLoading(true);
+            const payload = {
+                action: "saveLaporan",
+                data: {
+                    tgl: new Date().toISOString().split('T')[0],
+                    nama: document.getElementById('l-nama').value,
+                    jenis: document.getElementById('l-jenis').value,
+                    lokasi: document.getElementById('l-lokasi').value,
+                    uraian: document.getElementById('l-uraian').value
+                }
+            };
+            await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify(payload) });
+            closeModalLapor();
+            fetchAllData();
         }
-      }, [showSettingsModal, pengurus, warga, listWargaRW, listWargaRT13, listWargaRT14]);
 
-      const handleNominalChange = (e) => {
-        const rawVal = e.target.value.replace(/\D/g, '');
-        if (!rawVal) { setNominalDisplay(''); setNominalRaw(0); return; }
-        const numberVal = parseInt(rawVal, 10);
-        setNominalRaw(numberVal);
-        setNominalDisplay(new Intl.NumberFormat('id-ID').format(numberVal));
-      };
-
-      const handleAddKeuangan = (e) => {
-        e.preventDefault();
-        if (nominalRaw <= 0) { alert("Nominal tidak valid!"); return; }
-        const newTx = {
-          id: Date.now(),
-          jenis_kas: jenisKas,
-          tipe: tipeTx,
-          nominal: nominalRaw,
-          penyetor: tipeTx === 'Masuk' ? penyetorTx : '',
-          keterangan: keteranganTx,
-          tanggal: new Date().toISOString().split('T')[0]
-        };
-        setKeuangan(prev => [newTx, ...prev]);
-        sendDataToGSheet('addKeuangan', newTx);
-        setNominalDisplay(''); setNominalRaw(0); setKeteranganTx(''); setPenyetorTx('');
-        alert("Transaksi disimpan!");
-      };
-
-      const handleAddPengumuman = (e) => {
-        e.preventDefault();
-        const judul = e.target.judul.value;
-        const uraian = e.target.uraian.value;
-        const newP = { id: Date.now(), judul, uraian, tanggal: new Date().toISOString().split('T')[0] };
-        setPengumuman(prev => [newP, ...prev]);
-        sendDataToGSheet('addPengumuman', newP);
-        e.target.reset();
-        alert("Pengumuman dipublikasikan!");
-      };
-
-      const handleFotoKegiatanUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onloadend = () => setFotoKegiatan(reader.result);
-          reader.readAsDataURL(file);
+        function changeTab(t) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${t}`).classList.remove('hidden');
+            document.querySelectorAll('.nav-tab').forEach(el => { el.classList.remove('bg-orange-500', 'text-white'); el.classList.add('text-blue-100'); });
+            document.getElementById(`nav-${t}`).classList.add('bg-orange-500', 'text-white');
         }
-      };
 
-      const handleAddKegiatan = (e) => {
-        e.preventDefault();
-        const newK = { id: Date.now(), nama: namaKegiatan, tanggal: tglKegiatan, foto: fotoKegiatan };
-        setKegiatan(prev => [newK, ...prev]);
-        sendDataToGSheet('addKegiatan', newK);
-        setNamaKegiatan(''); setTglKegiatan(''); setFotoKegiatan(null);
-        alert("Kegiatan ditambahkan!");
-      };
-
-      // PERBAIKAN UTAMA: Penanganan Simpan Pengurus RT 13, RT 14, & RW secara lengkap
-      const handleSaveSettings = (e) => {
-        e.preventDefault();
-
-        const dataRW = warga.find(w => w.nama.trim().toLowerCase() === selectedRW.trim().toLowerCase());
-        const dataRT13 = warga.find(w => w.nama.trim().toLowerCase() === selectedRT13.trim().toLowerCase());
-        const dataRT14 = warga.find(w => w.nama.trim().toLowerCase() === selectedRT14.trim().toLowerCase());
-
-        const updatedPengurus = {
-          rw: { 
-            nama: selectedRW || pengurus.rw?.nama || '-', 
-            wa: (dataRW && dataRW.noWa && dataRW.noWa !== '-') ? dataRW.noWa : (pengurus.rw?.wa || '081234567890') 
-          },
-          rt13: { 
-            nama: selectedRT13 || pengurus.rt13?.nama || '-', 
-            wa: (dataRT13 && dataRT13.noWa && dataRT13.noWa !== '-') ? dataRT13.noWa : (pengurus.rt13?.wa || '081298765432') 
-          },
-          rt14: { 
-            nama: selectedRT14 || pengurus.rt14?.nama || '-', 
-            wa: (dataRT14 && dataRT14.noWa && dataRT14.noWa !== '-') ? dataRT14.noWa : (pengurus.rt14?.wa || '081345678901') 
-          }
-        };
-
-        const updatedPasswords = { 
-          superadmin: passSuper, 
-          rw: passRW, 
-          rt13: passRT13, 
-          rt14: passRT14 
-        };
-
-        setPengurus(updatedPengurus);
-        setPasswords(updatedPasswords);
-
-        sendDataToGSheet('updateSettings', { pengurus: updatedPengurus, passwords: updatedPasswords });
-
-        setShowSettingsModal(false);
-        alert("Pengaturan susunan pengurus (RW, RT 13, RT 14) dan password berhasil diperbarui!");
-      };
-
-      return (
-        <div className="space-y-6">
-          <div className="bg-orange-50 text-orange-900 p-3.5 rounded-xl text-xs font-semibold border border-orange-200 flex justify-between items-center">
-            <span>Akses Admin: {user.role === 'superadmin' ? 'SUPER ADMIN' : user.role.toUpperCase()}</span>
-            {user.role === 'superadmin' && (
-              <button onClick={() => setShowSettingsModal(true)} className="bg-orange-600 text-white px-3 py-1 rounded-lg text-xs font-bold flex items-center space-x-1">
-                <IconSettings size={14} />
-                <span>Pengaturan</span>
-              </button>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white rounded-2xl p-5 shadow-sm border">
-              <h3 className="font-bold text-slate-800 mb-3 text-xs uppercase border-b pb-2">📢 Input Pengumuman Baru</h3>
-              <form onSubmit={handleAddPengumuman} className="space-y-3 text-xs">
-                <input required name="judul" type="text" placeholder="Judul Pengumuman" className="w-full p-2.5 border rounded-xl bg-slate-50" />
-                <textarea required name="uraian" rows="3" placeholder="Uraian..." className="w-full p-2.5 border rounded-xl bg-slate-50"></textarea>
-                <button type="submit" className="w-full bg-blue-600 text-white py-2.5 rounded-xl font-bold">Terbitkan</button>
-              </form>
-            </div>
-
-            <div className="bg-white rounded-2xl p-5 shadow-sm border">
-              <h3 className="font-bold text-slate-800 mb-3 text-xs uppercase border-b pb-2">📅 Input Kegiatan Baru</h3>
-              <form onSubmit={handleAddKegiatan} className="space-y-3 text-xs">
-                <input required type="text" placeholder="Nama Kegiatan" value={namaKegiatan} onChange={e => setNamaKegiatan(e.target.value)} className="w-full p-2.5 border rounded-xl bg-slate-50" />
-                <input required type="date" value={tglKegiatan} onChange={e => setTglKegiatan(e.target.value)} className="w-full p-2.5 border rounded-xl bg-slate-50" />
-                <input type="file" accept="image/*" onChange={handleFotoKegiatanUpload} className="text-xs file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-orange-50 file:text-orange-700" />
-                <button type="submit" className="w-full bg-orange-500 text-white py-2.5 rounded-xl font-bold">Simpan Kegiatan</button>
-              </form>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 shadow-sm border">
-            <h3 className="font-bold text-slate-800 mb-3 text-xs uppercase border-b pb-2">💰 Input Transaksi Keuangan</h3>
-            <form onSubmit={handleAddKeuangan} className="space-y-3 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <select value={jenisKas} onChange={e => setJenisKas(e.target.value)} className="p-2.5 border rounded-xl bg-slate-50">
-                  <option value="Wajib">Iuran Wajib</option>
-                  <option value="Lain-lain">Iuran Lain-lain</option>
-                </select>
-                <select value={tipeTx} onChange={e => setTipeTx(e.target.value)} className="p-2.5 border rounded-xl bg-slate-50">
-                  <option value="Masuk">Pemasukan (+)</option>
-                  <option value="Keluar">Pengeluaran (-)</option>
-                </select>
-              </div>
-
-              {tipeTx === 'Masuk' && (
-                <input required type="text" placeholder="Nama Penyetor / Pembayar (Untuk Database)" value={penyetorTx} onChange={e => setPenyetorTx(e.target.value)} className="w-full p-2.5 border rounded-xl bg-slate-50" />
-              )}
-
-              <div className="relative">
-                <span className="absolute left-3 top-2.5 font-bold text-slate-400">Rp</span>
-                <input required type="text" placeholder="0" value={nominalDisplay} onChange={handleNominalChange} className="w-full pl-10 pr-4 py-2.5 border rounded-xl bg-slate-50 font-bold" />
-              </div>
-
-              <input required type="text" placeholder="Keterangan Transaksi" value={keteranganTx} onChange={e => setKeteranganTx(e.target.value)} className="w-full p-2.5 border rounded-xl bg-slate-50" />
-              <button type="submit" className="w-full bg-emerald-600 text-white py-2.5 rounded-xl font-bold">Simpan Transaksi</button>
-            </form>
-          </div>
-
-          {/* Modal Pengaturan Super Admin */}
-          {showSettingsModal && (
-            <div className="fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-4">
-              <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4">
-                <div className="flex justify-between items-center border-b pb-3">
-                  <h3 className="font-bold text-slate-800 flex items-center text-sm"><IconShield size={18} className="mr-2 text-blue-600"/> Pengaturan Super Admin</h3>
-                  <button onClick={() => setShowSettingsModal(false)}><IconX size={20}/></button>
-                </div>
-
-                <form onSubmit={handleSaveSettings} className="space-y-4 text-xs">
-                  <div className="bg-slate-50 p-3 rounded-xl border space-y-3">
-                    <h4 className="font-bold border-b pb-1 text-slate-700">1. Atur Pengurus (Diambil dari Data Warga)</h4>
-                    
-                    <div>
-                      <label className="block font-semibold mb-1 text-slate-600">Ketua RW 07</label>
-                      <select value={selectedRW} onChange={e => setSelectedRW(e.target.value)} className="w-full p-2 border rounded-lg bg-white font-medium">
-                        {listWargaRW.map(w => <option key={w.id} value={w.nama}>{w.nama} (RT {w.rt})</option>)}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block font-semibold mb-1 text-slate-600">Ketua RT 13</label>
-                      <select value={selectedRT13} onChange={e => setSelectedRT13(e.target.value)} className="w-full p-2 border rounded-lg bg-white font-medium">
-                        {listWargaRT13.map(w => <option key={w.id} value={w.nama}>{w.nama}</option>)}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block font-semibold mb-1 text-slate-600">Ketua RT 14</label>
-                      <select value={selectedRT14} onChange={e => setSelectedRT14(e.target.value)} className="w-full p-2 border rounded-lg bg-white font-medium">
-                        {listWargaRT14.map(w => <option key={w.id} value={w.nama}>{w.nama}</option>)}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="bg-slate-50 p-3 rounded-xl border space-y-2">
-                    <h4 className="font-bold border-b pb-1 text-slate-700">2. Atur Password Admin</h4>
-                    <div>
-                      <label className="block font-semibold mb-0.5 text-slate-600">Password Super Admin</label>
-                      <input type="text" value={passSuper} onChange={e => setPassSuper(e.target.value)} className="w-full p-2 border rounded-lg font-mono bg-white" />
-                    </div>
-                    <div>
-                      <label className="block font-semibold mb-0.5 text-slate-600">Password Ketua RW</label>
-                      <input type="text" value={passRW} onChange={e => setPassRW(e.target.value)} className="w-full p-2 border rounded-lg font-mono bg-white" />
-                    </div>
-                    <div>
-                      <label className="block font-semibold mb-0.5 text-slate-600">Password Ketua RT 13</label>
-                      <input type="text" value={passRT13} onChange={e => setPassRT13(e.target.value)} className="w-full p-2 border rounded-lg font-mono bg-white" />
-                    </div>
-                    <div>
-                      <label className="block font-semibold mb-0.5 text-slate-600">Password Ketua RT 14</label>
-                      <input type="text" value={passRT14} onChange={e => setPassRT14(e.target.value)} className="w-full p-2 border rounded-lg font-mono bg-white" />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end space-x-2 pt-2">
-                    <button type="button" onClick={() => setShowSettingsModal(false)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl font-bold">Batal</button>
-                    <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700">Simpan Pengaturan</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    // Render App ke DOM
-    const rootElement = document.getElementById('root');
-    const root = ReactDOM.createRoot(rootElement);
-    root.render(<App />);
-  </script>
+        function openModalLapor() { document.getElementById('modal-lapor').classList.remove('hidden'); }
+        function closeModalLapor() { document.getElementById('modal-lapor').classList.add('hidden'); }
+    </script>
 </body>
 </html>
-```
