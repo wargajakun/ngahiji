@@ -31,11 +31,11 @@
                 </div>
             </div>
             <div id="loading-indicator" class="hidden text-xs bg-amber-400 text-amber-950 px-2.5 py-1 rounded-md font-bold animate-pulse">
-                <i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat Data...
+                <i class="fa-solid fa-spinner fa-spin mr-1"></i> Sinkronisasi...
             </div>
         </div>
 
-        <!-- Navigation Tabs -->
+        <!-- Navigation Tabs (Dengan Indikator Oranye Aktif) -->
         <div class="bg-blue-950/40 border-t border-blue-500/20">
             <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto custom-scrollbar gap-1 py-1">
                 <button onclick="changeTab('warga')" id="nav-warga" class="nav-tab px-4 py-2 text-xs sm:text-sm font-medium rounded-lg whitespace-nowrap text-white bg-orange-500 shadow">
@@ -79,43 +79,71 @@
             <div id="container-kk-list" class="space-y-6"></div>
         </section>
 
-        <!-- TAB 2: STATISTIK -->
+        <!-- TAB 2: STATISTIK LENGKAP -->
         <section id="tab-statistik" class="tab-content hidden">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-blue-100 border-l-4 border-l-blue-600">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-l-4 border-l-blue-600">
                     <p class="text-xs font-semibold text-slate-500">Total KK</p>
                     <h3 id="stat-total-kk" class="text-2xl font-bold text-blue-900">0</h3>
                 </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-blue-100 border-l-4 border-l-orange-500">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-l-4 border-l-orange-500">
                     <p class="text-xs font-semibold text-slate-500">Total Jiwa</p>
                     <h3 id="stat-total-jiwa" class="text-2xl font-bold text-orange-600">0</h3>
                 </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-blue-100 border-l-4 border-l-emerald-500">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-l-4 border-l-emerald-500">
                     <p class="text-xs font-semibold text-slate-500">Status Warga</p>
-                    <div class="text-xs mt-1">Tetap: <strong id="stat-tetap">0</strong> | Pendatang: <strong id="stat-pendatang">0</strong></div>
+                    <div class="text-xs mt-1">Tetap: <strong id="stat-tetap" class="text-emerald-700">0</strong> | Pendatang: <strong id="stat-pendatang" class="text-amber-700">0</strong></div>
                 </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-blue-100 border-l-4 border-l-purple-500">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-l-4 border-l-purple-500">
                     <p class="text-xs font-semibold text-slate-500">Anak Yatim (&lt;17 Th)</p>
                     <h3 id="stat-total-yatim" class="text-2xl font-bold text-purple-700">0</h3>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <!-- Rincian RT -->
                 <div class="bg-white p-4 rounded-xl border border-slate-200">
-                    <h4 class="text-xs font-bold mb-3 border-b pb-2">Rincian Per RT (KK & Jiwa)</h4>
+                    <h4 class="text-xs font-bold mb-3 border-b pb-2"><i class="fa-solid fa-map-location-dot text-blue-600 mr-1"></i> Rincian Per RT (KK & Jiwa)</h4>
                     <div class="space-y-2 text-xs">
-                        <div class="flex justify-between p-2 bg-slate-50 rounded"><span>RT 13</span><strong id="stat-rt13">0 KK • 0 Jiwa</strong></div>
-                        <div class="flex justify-between p-2 bg-slate-50 rounded"><span>RT 14</span><strong id="stat-rt14">0 KK • 0 Jiwa</strong></div>
+                        <div class="flex justify-between p-2.5 bg-slate-50 rounded border"><span class="font-semibold">RT 13 / RW 07</span><strong id="stat-rt13" class="text-blue-700">0 KK • 0 Jiwa</strong></div>
+                        <div class="flex justify-between p-2.5 bg-slate-50 rounded border"><span class="font-semibold">RT 14 / RW 07</span><strong id="stat-rt14" class="text-blue-700">0 KK • 0 Jiwa</strong></div>
                     </div>
                 </div>
+                <!-- Kelahiran & Kematian -->
                 <div class="bg-white p-4 rounded-xl border border-slate-200">
-                    <h4 class="text-xs font-bold mb-3 border-b pb-2">Distribusi Kelompok Usia</h4>
-                    <div class="relative h-48"><canvas id="ageChart"></canvas></div>
+                    <h4 class="text-xs font-bold mb-3 border-b pb-2"><i class="fa-solid fa-heart-pulse text-rose-500 mr-1"></i> Kelahiran & Kematian</h4>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between p-2.5 bg-emerald-50 rounded border border-emerald-100"><span>Kelahiran (Bln / Thn):</span><strong id="stat-lahir" class="text-emerald-700">0 / 0</strong></div>
+                        <div class="flex justify-between p-2.5 bg-rose-50 rounded border border-rose-100"><span>Kematian (Bln / Thn):</span><strong id="stat-mati" class="text-rose-700">0 / 0</strong></div>
+                    </div>
+                </div>
+                <!-- Jenis Kelamin -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200">
+                    <h4 class="text-xs font-bold mb-3 border-b pb-2"><i class="fa-solid fa-venus-mars text-orange-500 mr-1"></i> Jenis Kelamin</h4>
+                    <div class="grid grid-cols-2 gap-2 text-center text-xs">
+                        <div class="bg-blue-50 p-2 rounded border"><span class="text-[10px] text-slate-500">Laki-Laki</span><div id="stat-jk-l" class="text-base font-bold text-blue-800">0</div></div>
+                        <div class="bg-pink-50 p-2 rounded border"><span class="text-[10px] text-slate-500">Perempuan</span><div id="stat-jk-p" class="text-base font-bold text-pink-700">0</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Kelompok Usia -->
+            <div class="bg-white p-4 rounded-xl border border-slate-200">
+                <h4 class="text-xs font-bold mb-3 border-b pb-2"><i class="fa-solid fa-users-line text-blue-600 mr-1"></i> Distribusi Kelompok Usia</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div class="relative h-56 w-full"><canvas id="ageChart"></canvas></div>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="p-2 bg-slate-50 rounded border"><span class="text-slate-500">Balita (0-5 th)</span><div id="age-balita" class="font-bold text-blue-700">0 Jiwa</div></div>
+                        <div class="p-2 bg-slate-50 rounded border"><span class="text-slate-500">Anak (6-12 th)</span><div id="age-anak" class="font-bold text-cyan-700">0 Jiwa</div></div>
+                        <div class="p-2 bg-slate-50 rounded border"><span class="text-slate-500">Remaja (13-17 th)</span><div id="age-remaja" class="font-bold text-teal-700">0 Jiwa</div></div>
+                        <div class="p-2 bg-slate-50 rounded border"><span class="text-slate-500">Dewasa (18-64 th)</span><div id="age-dewasa" class="font-bold text-indigo-700">0 Jiwa</div></div>
+                        <div class="p-2 bg-orange-50 rounded border border-orange-200 col-span-2"><span class="text-orange-800">Lansia (&gt;65 th)</span><div id="age-lansia" class="font-bold text-orange-700">0 Jiwa</div></div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- TAB 3: KEUANGAN -->
+        <!-- TAB 3: KEUANGAN TERPERINCI -->
         <section id="tab-keuangan" class="tab-content hidden">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div class="bg-gradient-brand text-white p-4 rounded-xl shadow-md">
@@ -124,11 +152,19 @@
                 </div>
                 <div class="bg-white p-4 rounded-xl border">
                     <p class="text-xs font-semibold text-slate-500">Kas Iuran Wajib</p>
-                    <h4 id="saldo-wajib" class="text-lg font-bold">Rp 0</h4>
+                    <h4 id="saldo-wajib" class="text-lg font-bold text-slate-800 mt-1">Rp 0</h4>
+                    <div class="flex justify-between text-[10px] mt-2 pt-2 border-t text-slate-500">
+                        <span>Masuk: <strong id="masuk-wajib" class="text-emerald-600">Rp 0</strong></span>
+                        <span>Keluar: <strong id="keluar-wajib" class="text-rose-600">Rp 0</strong></span>
+                    </div>
                 </div>
                 <div class="bg-white p-4 rounded-xl border">
                     <p class="text-xs font-semibold text-slate-500">Kas Iuran Lain-Lain</p>
-                    <h4 id="saldo-lain" class="text-lg font-bold">Rp 0</h4>
+                    <h4 id="saldo-lain" class="text-lg font-bold text-slate-800 mt-1">Rp 0</h4>
+                    <div class="flex justify-between text-[10px] mt-2 pt-2 border-t text-slate-500">
+                        <span>Masuk: <strong id="masuk-lain" class="text-emerald-600">Rp 0</strong></span>
+                        <span>Keluar: <strong id="keluar-lain" class="text-rose-600">Rp 0</strong></span>
+                    </div>
                 </div>
             </div>
             <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
@@ -140,20 +176,23 @@
             </div>
         </section>
 
-        <!-- TAB 4: LAPORAN -->
+        <!-- TAB 4: WARGA MELAPOR (DENGAN UPLOAD FOTO) -->
         <section id="tab-laporan" class="tab-content hidden">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-lg font-bold">Layanan Warga Melapor</h2>
-                <button onclick="openModalLapor()" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-2 rounded-lg font-bold shadow">+ Buat Laporan</button>
+                <div>
+                    <h2 class="text-lg font-bold">Layanan Warga Melapor</h2>
+                    <p class="text-xs text-slate-500">Kirim laporan kejadian atau aduan fasilitas umum rusak</p>
+                </div>
+                <button onclick="openModalLapor()" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3.5 py-2 rounded-lg font-bold shadow">+ Buat Laporan</button>
             </div>
             <div id="container-laporan" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </section>
 
-        <!-- TAB 5: PENGUMUMAN -->
+        <!-- TAB 5: PENGUMUMAN & AGENDA -->
         <section id="tab-pengumuman" class="tab-content hidden">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="space-y-3"><h3 class="text-xs font-bold border-b pb-2">Pengumuman</h3><div id="list-pengumuman" class="space-y-2"></div></div>
-                <div class="lg:col-span-2 space-y-3"><h3 class="text-xs font-bold border-b pb-2">Agenda Kegiatan</h3><div id="list-kegiatan" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div>
+                <div class="space-y-3"><h3 class="text-xs font-bold border-b pb-2"><i class="fa-solid fa-scroll text-blue-600"></i> Pengumuman</h3><div id="list-pengumuman" class="space-y-2"></div></div>
+                <div class="lg:col-span-2 space-y-3"><h3 class="text-xs font-bold border-b pb-2"><i class="fa-solid fa-calendar-check text-orange-500"></i> Agenda & Galeri Kegiatan (Klik Gambar untuk Zoom)</h3><div id="list-kegiatan" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div>
             </div>
         </section>
 
@@ -163,93 +202,114 @@
     <footer class="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md text-slate-300 text-xs py-2.5 border-t border-slate-700 z-30 shadow-2xl">
         <div class="max-w-7xl mx-auto px-4 flex justify-between items-center text-[10px]">
             <div><strong>JAKUN NGAHIJI</strong> • RW 07 Rukun Sauyunan</div>
-            <div class="text-emerald-400"><i class="fa-solid fa-circle-check mr-1"></i> Connect GAS API Realtime</div>
+            <div class="text-emerald-400"><i class="fa-solid fa-circle-check mr-1"></i> GAS API Connected</div>
         </div>
     </footer>
 
-    <!-- MODAL LAPORAN -->
+    <!-- MODAL FORM LAPORAN WARGA (DENGAN UPLOAD FOTO) -->
     <div id="modal-lapor" class="fixed inset-0 bg-slate-900/60 hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-4 space-y-3 text-xs">
-            <h3 class="font-bold border-b pb-2">Kirim Laporan Warga</h3>
+            <h3 class="font-bold border-b pb-2 text-sm text-orange-600"><i class="fa-solid fa-paper-plane mr-1"></i> Kirim Laporan Warga</h3>
             <form onsubmit="sendLaporan(event)" class="space-y-2">
-                <div><label>Nama Pelapor</label><input type="text" id="l-nama" required class="w-full p-2 border rounded"></div>
-                <div><label>Jenis Laporan</label><select id="l-jenis" class="w-full p-2 border rounded"><option value="Keamanan">Keamanan</option><option value="Fasilitas">Fasilitas Rusak</option><option value="Kebersihan">Kebersihan</option></select></div>
-                <div><label>Lokasi Kejadian</label><input type="text" id="l-lokasi" required class="w-full p-2 border rounded"></div>
-                <div><label>Uraian Laporan</label><textarea id="l-uraian" rows="3" required class="w-full p-2 border rounded"></textarea></div>
+                <div><label class="font-semibold block mb-1">Nama Pelapor *</label><input type="text" id="l-nama" required class="w-full p-2 border rounded"></div>
+                <div><label class="font-semibold block mb-1">Jenis Laporan *</label><select id="l-jenis" class="w-full p-2 border rounded"><option value="Keamanan">Keamanan & Ketertiban</option><option value="Fasilitas">Fasilitas Umum Rusak</option><option value="Kebersihan">Kebersihan & Sampah</option><option value="Lainnya">Lainnya</option></select></div>
+                <div><label class="font-semibold block mb-1">Lokasi Kejadian *</label><input type="text" id="l-lokasi" placeholder="Contoh: Dekat Pos Ronda RT 13" required class="w-full p-2 border rounded"></div>
+                <div><label class="font-semibold block mb-1">Uraian Kejadian *</label><textarea id="l-uraian" rows="3" required placeholder="Jelaskan detail laporan..." class="w-full p-2 border rounded"></textarea></div>
+                <div class="bg-orange-50 p-2 border border-orange-200 rounded">
+                    <label class="font-semibold block mb-1 text-orange-800">Lampirkan Foto Kejadian</label>
+                    <input type="file" id="l-foto-file" accept="image/*" class="w-full text-xs">
+                </div>
                 <div class="pt-2 flex justify-end gap-2 border-t">
-                    <button type="button" onclick="closeModalLapor()" class="px-3 py-1 bg-slate-200 rounded">Batal</button>
-                    <button type="submit" class="px-4 py-1 bg-orange-500 text-white font-bold rounded">Kirim</button>
+                    <button type="button" onclick="closeModalLapor()" class="px-3 py-1 bg-slate-200 rounded font-bold">Batal</button>
+                    <button type="submit" class="px-4 py-1 bg-orange-500 text-white font-bold rounded shadow">Kirim Laporan</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- JAVASCRIPT API CONNECTIVITY -->
+    <!-- MODAL ZOOM GAMBAR KEGIATAN -->
+    <div id="modal-zoom" onclick="closeZoom()" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4 cursor-pointer">
+        <div class="relative max-w-4xl max-h-[90vh]">
+            <img id="zoom-img-src" src="" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl">
+            <p class="text-white text-center text-xs mt-3">Ketuk di mana saja untuk menutup</p>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC PORTAL PUBLIK -->
     <script>
         // GANTI DENGAN URL DEPLOYMENT GOOGLE APPS SCRIPT ANDA
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx1-Qh4MFfZ5gkYIjlH5tHW2kjARMWgnYOPPTbvDSxXtNx05En9IuyrnIzmZSHwVw_yqQ/exec";
 
-        let storeWarga = [];
-        let storeKeuangan = [];
-        let storeLaporan = [];
-        let storePengumuman = [];
-        let storeKegiatan = [];
+        let storeWarga = [], storeKeuangan = [], storeLaporan = [], storePengumuman = [], storeKegiatan = [];
         let ageChartInstance = null;
 
-        window.onload = function() {
-            fetchAllData();
-        };
+        window.onload = function() { fetchAllData(); };
 
-        function showLoading(show) {
-            document.getElementById('loading-indicator').classList.toggle('hidden', !show);
-        }
+        function showLoading(show) { document.getElementById('loading-indicator').classList.toggle('hidden', !show); }
 
         async function fetchAllData() {
             showLoading(true);
             try {
-                // Fetch Data Warga Public
-                const resWarga = await fetch(`${GAS_API_URL}?action=getDataWargaPublic`);
-                const jsonWarga = await resWarga.json();
-                if(jsonWarga.status === 'success') storeWarga = jsonWarga.data;
+                const res = await fetch(`${GAS_API_URL}?action=getDataWargaPublic`);
+                const json = await res.json();
+                if(json.status === 'success') storeWarga = json.data;
 
-                // Fetch Keuangan
-                const resKeu = await fetch(`${GAS_API_URL}?action=getKeuangan`);
-                const jsonKeu = await resKeu.json();
-                if(jsonKeu.status === 'success') storeKeuangan = jsonKeu.data;
+                const resK = await fetch(`${GAS_API_URL}?action=getKeuangan`);
+                const jsonK = await resK.json();
+                if(jsonK.status === 'success') storeKeuangan = jsonK.data;
 
-                // Fetch Laporan
-                const resLap = await fetch(`${GAS_API_URL}?action=getLaporan`);
-                const jsonLap = await resLap.json();
-                if(jsonLap.status === 'success') storeLaporan = jsonLap.data;
+                const resL = await fetch(`${GAS_API_URL}?action=getLaporan`);
+                const jsonL = await resL.json();
+                if(jsonL.status === 'success') storeLaporan = jsonL.data;
 
-                // Fetch Pengumuman & Kegiatan
                 const resInfo = await fetch(`${GAS_API_URL}?action=getPengumumanKegiatan`);
                 const jsonInfo = await resInfo.json();
                 if(jsonInfo.status === 'success') {
-                    storePengumuman = jsonInfo.data.pengumuman;
-                    storeKegiatan = jsonInfo.data.kegiatan;
+                    storePengumuman = jsonInfo.data.pengumuman || [];
+                    storeKegiatan = jsonInfo.data.kegiatan || [];
                 }
 
                 renderWargaByKK();
                 renderStatistik();
                 renderKeuangan();
                 renderLaporan();
-                renderPengumuman();
+                renderPengumumanKegiatan();
             } catch (err) {
-                console.error("Gagal koneksi GAS API:", err);
+                console.error("Gagal koneksi API:", err);
             } finally {
                 showLoading(false);
             }
         }
 
-        function calculateAge(bStr) {
-            if(!bStr) return 0;
-            const b = new Date(bStr); const t = new Date();
-            let age = t.getFullYear() - b.getFullYear();
-            if (t.getMonth() - b.getMonth() < 0) age--;
-            return age;
+        // TAB SWITCHER DENGAN WARNA ORANYE AKTIF
+        function changeTab(t) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${t}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-tab').forEach(el => {
+                el.classList.remove('bg-orange-500', 'text-white', 'shadow');
+                el.classList.add('text-blue-100', 'hover:bg-blue-800/50');
+            });
+
+            const activeNav = document.getElementById(`nav-${t}`);
+            activeNav.classList.add('bg-orange-500', 'text-white', 'shadow');
+            activeNav.classList.remove('text-blue-100', 'hover:bg-blue-800/50');
+
+            if(t === 'statistik') renderStatistik();
         }
 
+        function calculateAge(b) {
+            if(!b) return 0;
+            const bd = new Date(b), td = new Date(); let age = td.getFullYear() - bd.getFullYear();
+            if (td.getMonth() - bd.getMonth() < 0) age--; return age;
+        }
+
+        function isAnakYatim(w) {
+            const age = calculateAge(w.tgl);
+            return w.yatim || (w.statusAyah === 'Meninggal' && age < 17);
+        }
+
+        // RENDER DATA WARGA PER KK
         function renderWargaByKK() {
             const container = document.getElementById('container-kk-list');
             const search = document.getElementById('search-warga').value.toLowerCase();
@@ -263,103 +323,194 @@
                 grouped[w.nokk].push(w);
             });
 
-            let idx = 1;
+            let hasData = false;
             for (const nokk in grouped) {
                 const members = grouped[nokk];
                 const kepala = members.find(m => m.peran === 'Kepala Keluarga') || members[0];
                 if(search && !members.some(m => m.nama.toLowerCase().includes(search))) continue;
+                hasData = true;
 
                 let rows = '';
                 members.forEach((m, i) => {
-                    const waLink = m.wa ? `<a href="https://wa.me/${m.wa}" target="_blank" class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold"><i class="fa-brands fa-whatsapp"></i> ${m.wa}</a>` : '-';
-                    rows += `
-                        <tr class="border-b text-xs">
-                            <td class="p-2 text-center text-slate-400">${i+1}</td>
-                            <td class="p-2 font-bold">${m.nama}</td>
-                            <td class="p-2">${m.peran}</td>
-                            <td class="p-2 font-bold ${m.jk==='L'?'text-blue-600':'text-pink-600'}">${m.jk}</td>
-                            <td class="p-2">${waLink}</td>
-                            <td class="p-2"><span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">${m.status}</span></td>
-                        </tr>
-                    `;
+                    const age = calculateAge(m.tgl);
+                    const yatim = isAnakYatim(m);
+                    const isBalita = age <= 5;
+                    const isLansia = age >= 65;
+
+                    let tags = '';
+                    if(yatim) tags += `<span class="bg-purple-100 text-purple-800 text-[10px] px-1.5 py-0.5 rounded font-bold mr-1">Anak Yatim</span>`;
+                    if(isBalita) tags += `<span class="bg-cyan-100 text-cyan-800 text-[10px] px-1.5 py-0.5 rounded font-bold mr-1">Balita</span>`;
+                    if(isLansia) tags += `<span class="bg-orange-100 text-orange-800 text-[10px] px-1.5 py-0.5 rounded font-bold mr-1">Lansia</span>`;
+
+                    let waLink = m.wa ? `<a href="https://wa.me/${m.wa}" target="_blank" class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold"><i class="fa-brands fa-whatsapp"></i> ${m.wa}</a>` : '-';
+                    rows += `<tr class="border-b text-xs"><td class="p-2.5 text-center text-slate-400">${i+1}</td><td class="p-2.5 font-bold">${m.nama}</td><td class="p-2.5">${m.peran}</td><td class="p-2.5 font-bold ${m.jk==='L'?'text-blue-600':'text-pink-600'}">${m.jk}</td><td class="p-2.5">${waLink}</td><td class="p-2.5"><span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">${m.status}</span></td><td class="p-2.5">${tags||'-'}</td></tr>`;
                 });
 
                 const card = document.createElement('div');
                 card.className = "bg-white rounded-xl border shadow-sm overflow-hidden";
-                card.innerHTML = `
-                    <div class="bg-slate-100 p-3 border-b flex justify-between items-center text-xs">
-                        <h3 class="font-extrabold text-slate-800">Keluarga Bpk/Ibu ${kepala.nama}</h3>
-                        <span class="bg-blue-600 text-white font-bold px-2 py-0.5 rounded">${kepala.rt} / ${kepala.rw}</span>
+                card.innerHTML = `<div class="bg-slate-100 p-3 border-b flex justify-between items-center text-xs">
+                        <div><h3 class="font-extrabold text-slate-800">Keluarga Bpk/Ibu ${kepala.nama}</h3><span class="text-[10px] text-slate-500">Total Anggota: <strong>${members.length} Jiwa</strong></span></div>
+                        <span class="bg-blue-600 text-white font-bold px-2.5 py-1 rounded">${kepala.rt} / ${kepala.rw}</span>
                     </div>
-                    <table class="w-full text-left"><thead><tr class="bg-slate-50 text-[11px] border-b"><th class="p-2 w-8">No</th><th class="p-2">Nama</th><th class="p-2">Peran</th><th class="p-2">JK</th><th class="p-2">WA</th><th class="p-2">Status</th></tr></thead><tbody>${rows}</tbody></table>
-                `;
+                    <div class="overflow-x-auto"><table class="w-full text-left"><thead><tr class="bg-slate-50 text-[11px] border-b"><th class="p-2.5 w-8">No</th><th class="p-2.5">Nama Anggota</th><th class="p-2.5">Peran</th><th class="p-2.5">JK</th><th class="p-2.5">WA</th><th class="p-2.5">Status</th><th class="p-2.5">Kategori</th></tr></thead><tbody>${rows}</tbody></table></div>`;
                 container.appendChild(card);
-                idx++;
+            }
+            if(!hasData) container.innerHTML = `<div class="p-8 text-center bg-white rounded-xl border text-slate-400 text-xs">Data warga tidak ditemukan.</div>`;
+        }
+
+        // RENDER STATISTIK LENGKAP
+        function renderStatistik() {
+            const totalJiwa = storeWarga.length;
+            const totalKK = new Set(storeWarga.map(w => w.nokk)).size;
+            const tetap = storeWarga.filter(w => w.status === 'Tetap').length;
+            const pendatang = storeWarga.filter(w => w.status === 'Pendatang').length;
+            const totalYatim = storeWarga.filter(w => isAnakYatim(w)).length;
+
+            let rt13Jiwa = 0, rt13KK = new Set();
+            let rt14Jiwa = 0, rt14KK = new Set();
+            let jkL = 0, jkP = 0;
+            let balita = 0, anak = 0, remaja = 0, dewasa = 0, lansia = 0;
+            let lahirBulan = 0, lahirTahun = 0;
+            const now = new Date();
+
+            storeWarga.forEach(w => {
+                if(w.jk === 'L') jkL++; else jkP++;
+                if(w.rt === 'RT 13') { rt13Jiwa++; rt13KK.add(w.nokk); }
+                if(w.rt === 'RT 14') { rt14Jiwa++; rt14KK.add(w.nokk); }
+
+                const age = calculateAge(w.tgl);
+                if(age <= 5) balita++; else if(age <= 12) anak++; else if(age <= 17) remaja++; else if(age <= 64) dewasa++; else lansia++;
+
+                if(w.tgl) {
+                    const bd = new Date(w.tgl);
+                    if(bd.getFullYear() === now.getFullYear()) {
+                        lahirTahun++;
+                        if(bd.getMonth() === now.getMonth()) lahirBulan++;
+                    }
+                }
+            });
+
+            document.getElementById('stat-total-kk').innerText = totalKK;
+            document.getElementById('stat-total-jiwa').innerText = totalJiwa;
+            document.getElementById('stat-tetap').innerText = tetap;
+            document.getElementById('stat-pendatang').innerText = pendatang;
+            document.getElementById('stat-total-yatim').innerText = totalYatim;
+
+            document.getElementById('stat-rt13').innerText = `${rt13KK.size} KK • ${rt13Jiwa} Jiwa`;
+            document.getElementById('stat-rt14').innerText = `${rt14KK.size} KK • ${rt14Jiwa} Jiwa`;
+            document.getElementById('stat-jk-l').innerText = jkL;
+            document.getElementById('stat-jk-p').innerText = jkP;
+
+            document.getElementById('stat-lahir').innerText = `${lahirBulan} / ${lahirTahun}`;
+            document.getElementById('stat-mati').innerText = `0 / 0`;
+
+            document.getElementById('age-balita').innerText = `${balita} Jiwa`;
+            document.getElementById('age-anak').innerText = `${anak} Jiwa`;
+            document.getElementById('age-remaja').innerText = `${remaja} Jiwa`;
+            document.getElementById('age-dewasa').innerText = `${dewasa} Jiwa`;
+            document.getElementById('age-lansia').innerText = `${lansia} Jiwa`;
+
+            const ctx = document.getElementById('ageChart').getContext('2d');
+            if(ageChartInstance) ageChartInstance.destroy();
+            ageChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Balita', 'Anak', 'Remaja', 'Dewasa', 'Lansia'],
+                    datasets: [{ data: [balita, anak, remaja, dewasa, lansia], backgroundColor: ['#2563eb', '#06b6d4', '#14b8a6', '#6366f1', '#f97316'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        // RENDER KEUANGAN TERPERINCI
+        function renderKeuangan() {
+            let mWajib = 0, kWajib = 0, mLain = 0, kLain = 0;
+            const tbody = document.getElementById('table-keuangan-body'); tbody.innerHTML = '';
+
+            storeKeuangan.forEach(k => {
+                if(k.jenis === 'Wajib') { if(k.tipe === 'Pemasukan') mWajib += k.nominal; else kWajib += k.nominal; }
+                else { if(k.tipe === 'Pemasukan') mLain += k.nominal; else kLain += k.nominal; }
+
+                tbody.innerHTML += `<tr class="border-b"><td class="p-2.5 text-slate-500">${k.tgl}</td><td class="p-2.5 font-semibold">${k.jenis}</td><td class="p-2.5 font-bold ${k.tipe==='Pemasukan'?'text-emerald-600':'text-rose-600'}">${k.tipe}</td><td class="p-2.5">${k.ket}</td><td class="p-2.5 text-right font-bold">Rp ${k.nominal.toLocaleString('id-ID')}</td></tr>`;
+            });
+
+            const sWajib = mWajib - kWajib;
+            const sLain = mLain - kLain;
+            document.getElementById('saldo-total').innerText = `Rp ${(sWajib + sLain).toLocaleString('id-ID')}`;
+            document.getElementById('saldo-wajib').innerText = `Rp ${sWajib.toLocaleString('id-ID')}`;
+            document.getElementById('masuk-wajib').innerText = `Rp ${mWajib.toLocaleString('id-ID')}`;
+            document.getElementById('keluar-wajib').innerText = `Rp ${kWajib.toLocaleString('id-ID')}`;
+            document.getElementById('saldo-lain').innerText = `Rp ${sLain.toLocaleString('id-ID')}`;
+            document.getElementById('masuk-lain').innerText = `Rp ${mLain.toLocaleString('id-ID')}`;
+            document.getElementById('keluar-lain').innerText = `Rp ${kLain.toLocaleString('id-ID')}`;
+        }
+
+        // RENDER LAPORAN
+        function renderLaporan() {
+            const container = document.getElementById('container-laporan'); container.innerHTML = '';
+            storeLaporan.forEach(l => {
+                container.innerHTML += `<div class="bg-white p-3 rounded-xl border text-xs space-y-1"><div class="flex justify-between font-bold"><span>${l.nama} (${l.jenis})</span><span class="text-blue-600">${l.status}</span></div><p>${l.uraian}</p><div class="text-[10px] text-slate-400">Lokasi: ${l.lokasi}</div>${l.tanggapan?`<div class="p-2 bg-blue-50 text-blue-900 rounded">Respon: ${l.tanggapan}</div>`:''}</div>`;
+            });
+        }
+
+        // RENDER PENGUMUMAN & KEGIATAN DENGAN FITUR ZOOM FOTO
+        function renderPengumumanKegiatan() {
+            const listP = document.getElementById('list-pengumuman'); listP.innerHTML = '';
+            const listK = document.getElementById('list-kegiatan'); listK.innerHTML = '';
+
+            storePengumuman.forEach(p => {
+                listP.innerHTML += `<div class="bg-white p-3.5 rounded-xl border text-xs space-y-1"><span class="text-[10px] font-bold text-blue-600">${p.tgl}</span><h4 class="font-bold">${p.judul}</h4><p class="text-slate-600">${p.uraian}</p></div>`;
+            });
+
+            storeKegiatan.forEach(k => {
+                let imgHtml = k.fotos && k.fotos[0] ? `<img src="${k.fotos[0]}" onclick="zoomImg('${k.fotos[0]}')" class="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90 transition" title="Ketuk untuk memperbesar">` : '';
+                listK.innerHTML += `<div class="bg-white p-3.5 rounded-xl border text-xs space-y-2">${imgHtml}<span class="text-[10px] font-bold text-orange-600">${k.tgl}</span><h4 class="font-bold">${k.judul}</h4><p class="text-slate-600">${k.uraian}</p></div>`;
+            });
+        }
+
+        // KIRIM LAPORAN DENGAN FOTO KE GAS
+        async function sendLaporan(e) {
+            e.preventDefault(); showLoading(true);
+            const p = {
+                tgl: new Date().toISOString().split('T')[0],
+                nama: document.getElementById('l-nama').value,
+                jenis: document.getElementById('l-jenis').value,
+                lokasi: document.getElementById('l-lokasi').value,
+                uraian: document.getElementById('l-uraian').value
+            };
+
+            const fileInput = document.getElementById('l-foto-file');
+            const file = fileInput.files[0];
+
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = async function(event) {
+                    // Karena backend publik menerima format POST JSON, kita kirimkan via fetch POST
+                    p.fotoBase64 = event.target.result.split(',')[1];
+                    p.fotoName = file.name;
+                    await postDataToGAS(p);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                await postDataToGAS(p);
             }
         }
 
-        function renderStatistik() {
-            document.getElementById('stat-total-jiwa').innerText = storeWarga.length;
-            document.getElementById('stat-total-kk').innerText = new Set(storeWarga.map(w => w.nokk)).size;
-            document.getElementById('stat-tetap').innerText = storeWarga.filter(w => w.status === 'Tetap').length;
-            document.getElementById('stat-pendatang').innerText = storeWarga.filter(w => w.status === 'Pendatang').length;
-            document.getElementById('stat-total-yatim').innerText = storeWarga.filter(w => w.yatim || (w.statusAyah==='Meninggal' && calculateAge(w.tgl)<17)).length;
+        async function postDataToGAS(payload) {
+            await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify({ action: "saveLaporan", data: payload }) });
+            closeModalLapor(); fetchAllData(); alert("Laporan berhasil dikirim!");
         }
 
-        function renderKeuangan() {
-            const tbody = document.getElementById('table-keuangan-body');
-            tbody.innerHTML = '';
-            let total = 0;
-            storeKeuangan.forEach(k => {
-                if(k.tipe==='Pemasukan') total += k.nominal; else total -= k.nominal;
-                tbody.innerHTML += `<tr class="border-b"><td class="p-2">${k.tgl}</td><td class="p-2">${k.jenis}</td><td class="p-2 font-bold ${k.tipe==='Pemasukan'?'text-emerald-600':'text-rose-600'}">${k.tipe}</td><td class="p-2">${k.ket}</td><td class="p-2 text-right font-bold">Rp ${k.nominal.toLocaleString('id-ID')}</td></tr>`;
-            });
-            document.getElementById('saldo-total').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+        // ZOOM FOTO HELPERS
+        function zoomImg(url) {
+            document.getElementById('zoom-img-src').src = url;
+            document.getElementById('modal-zoom').classList.remove('hidden');
         }
-
-        function renderLaporan() {
-            const container = document.getElementById('container-laporan');
-            container.innerHTML = '';
-            storeLaporan.forEach(l => {
-                container.innerHTML += `<div class="bg-white p-3 rounded-xl border text-xs space-y-1"><div class="flex justify-between font-bold"><span>${l.nama} (${l.jenis})</span><span class="text-blue-600">${l.status}</span></div><p>${l.uraian}</p><div class="text-[10px] text-slate-400">Lokasi: ${l.lokasi}</div></div>`;
-            });
-        }
-
-        function renderPengumuman() {
-            const listP = document.getElementById('list-pengumuman');
-            listP.innerHTML = '';
-            storePengumuman.forEach(p => {
-                listP.innerHTML += `<div class="bg-white p-3 rounded-xl border text-xs"><span class="text-[10px] font-bold text-blue-600">${p.tgl}</span><h4 class="font-bold">${p.judul}</h4><p>${p.uraian}</p></div>`;
-            });
-        }
-
-        async function sendLaporan(e) {
-            e.preventDefault();
-            showLoading(true);
-            const payload = {
-                action: "saveLaporan",
-                data: {
-                    tgl: new Date().toISOString().split('T')[0],
-                    nama: document.getElementById('l-nama').value,
-                    jenis: document.getElementById('l-jenis').value,
-                    lokasi: document.getElementById('l-lokasi').value,
-                    uraian: document.getElementById('l-uraian').value
-                }
-            };
-            await fetch(GAS_API_URL, { method: "POST", body: JSON.stringify(payload) });
-            closeModalLapor();
-            fetchAllData();
-        }
-
-        function changeTab(t) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`tab-${t}`).classList.remove('hidden');
-            document.querySelectorAll('.nav-tab').forEach(el => { el.classList.remove('bg-orange-500', 'text-white'); el.classList.add('text-blue-100'); });
-            document.getElementById(`nav-${t}`).classList.add('bg-orange-500', 'text-white');
-        }
+        function closeZoom() { document.getElementById('modal-zoom').classList.add('hidden'); }
 
         function openModalLapor() { document.getElementById('modal-lapor').classList.remove('hidden'); }
         function closeModalLapor() { document.getElementById('modal-lapor').classList.add('hidden'); }
     </script>
 </body>
 </html>
+
