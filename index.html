@@ -35,7 +35,7 @@
             </div>
         </div>
 
-        <!-- Navigation Tabs (Dengan Indikator Oranye Aktif) -->
+        <!-- Navigation Tabs -->
         <div class="bg-blue-950/40 border-t border-blue-500/20">
             <div class="max-w-7xl mx-auto px-4 flex overflow-x-auto custom-scrollbar gap-1 py-1">
                 <button onclick="changeTab('warga')" id="nav-warga" class="nav-tab px-4 py-2 text-xs sm:text-sm font-medium rounded-lg whitespace-nowrap text-white bg-orange-500 shadow">
@@ -176,7 +176,7 @@
             </div>
         </section>
 
-        <!-- TAB 4: WARGA MELAPOR (DENGAN UPLOAD FOTO) -->
+        <!-- TAB 4: WARGA MELAPOR -->
         <section id="tab-laporan" class="tab-content hidden">
             <div class="flex justify-between items-center mb-6">
                 <div>
@@ -206,7 +206,7 @@
         </div>
     </footer>
 
-    <!-- MODAL FORM LAPORAN WARGA (DENGAN UPLOAD FOTO) -->
+    <!-- MODAL FORM LAPORAN WARGA -->
     <div id="modal-lapor" class="fixed inset-0 bg-slate-900/60 hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-4 space-y-3 text-xs">
             <h3 class="font-bold border-b pb-2 text-sm text-orange-600"><i class="fa-solid fa-paper-plane mr-1"></i> Kirim Laporan Warga</h3>
@@ -227,7 +227,7 @@
         </div>
     </div>
 
-    <!-- MODAL ZOOM GAMBAR KEGIATAN -->
+    <!-- MODAL ZOOM GAMBAR -->
     <div id="modal-zoom" onclick="closeZoom()" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4 cursor-pointer">
         <div class="relative max-w-4xl max-h-[90vh]">
             <img id="zoom-img-src" src="" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl">
@@ -235,10 +235,10 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC PORTAL PUBLIK -->
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // GANTI DENGAN URL DEPLOYMENT GOOGLE APPS SCRIPT ANDA
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx1-Qh4MFfZ5gkYIjlH5tHW2kjARMWgnYOPPTbvDSxXtNx05En9IuyrnIzmZSHwVw_yqQ/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx1-Qh4MFfZ5gkYIjlH5tHW2kjARMWgnYOPPTbvDSxXtNx05En9IuyrnIzmZSHwVw_yqQ/exec
+";
 
         let storeWarga = [], storeKeuangan = [], storeLaporan = [], storePengumuman = [], storeKegiatan = [];
         let ageChartInstance = null;
@@ -281,7 +281,6 @@
             }
         }
 
-        // TAB SWITCHER DENGAN WARNA ORANYE AKTIF
         function changeTab(t) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`tab-${t}`).classList.remove('hidden');
@@ -309,7 +308,6 @@
             return w.yatim || (w.statusAyah === 'Meninggal' && age < 17);
         }
 
-        // RENDER DATA WARGA PER KK
         function renderWargaByKK() {
             const container = document.getElementById('container-kk-list');
             const search = document.getElementById('search-warga').value.toLowerCase();
@@ -358,7 +356,6 @@
             if(!hasData) container.innerHTML = `<div class="p-8 text-center bg-white rounded-xl border text-slate-400 text-xs">Data warga tidak ditemukan.</div>`;
         }
 
-        // RENDER STATISTIK LENGKAP
         function renderStatistik() {
             const totalJiwa = storeWarga.length;
             const totalKK = new Set(storeWarga.map(w => w.nokk)).size;
@@ -422,7 +419,6 @@
             });
         }
 
-        // RENDER KEUANGAN TERPERINCI
         function renderKeuangan() {
             let mWajib = 0, kWajib = 0, mLain = 0, kLain = 0;
             const tbody = document.getElementById('table-keuangan-body'); tbody.innerHTML = '';
@@ -445,30 +441,41 @@
             document.getElementById('keluar-lain').innerText = `Rp ${kLain.toLocaleString('id-ID')}`;
         }
 
-        // RENDER LAPORAN
         function renderLaporan() {
             const container = document.getElementById('container-laporan'); container.innerHTML = '';
             storeLaporan.forEach(l => {
-                container.innerHTML += `<div class="bg-white p-3 rounded-xl border text-xs space-y-1"><div class="flex justify-between font-bold"><span>${l.nama} (${l.jenis})</span><span class="text-blue-600">${l.status}</span></div><p>${l.uraian}</p><div class="text-[10px] text-slate-400">Lokasi: ${l.lokasi}</div>${l.tanggapan?`<div class="p-2 bg-blue-50 text-blue-900 rounded">Respon: ${l.tanggapan}</div>`:''}</div>`;
+                let badgeStatus = 'bg-amber-100 text-amber-800';
+                if(l.status === 'Diproses') badgeStatus = 'bg-blue-100 text-blue-800';
+                if(l.status === 'Selesai') badgeStatus = 'bg-emerald-100 text-emerald-800';
+
+                let imgHtml = l.foto ? `<img src="${l.foto}" onclick="zoomImg('${l.foto}')" class="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90 transition mt-2 border" title="Ketuk untuk memperbesar">` : '';
+
+                container.innerHTML += `<div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-2.5">
+                    <div class="flex justify-between items-start border-b pb-2">
+                        <div><span class="text-[10px] text-slate-400">${l.tgl} • Pelapor: <strong>${l.nama}</strong></span><h4 class="font-bold text-xs text-slate-800">${l.jenis}</h4></div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeStatus}">${l.status}</span>
+                    </div>
+                    <p class="text-xs text-slate-600">${l.uraian}</p>${imgHtml}
+                    <div class="text-[11px] text-slate-500 bg-slate-50 p-2 rounded"><i class="fa-solid fa-location-dot text-orange-500 mr-1"></i> Lokasi: ${l.lokasi}</div>
+                    ${l.tanggapan ? `<div class="text-xs p-2 bg-blue-50 border-l-2 border-blue-600 rounded text-blue-900"><strong>Tanggapan Pengurus:</strong> ${l.tanggapan}</div>` : ''}
+                </div>`;
             });
         }
 
-        // RENDER PENGUMUMAN & KEGIATAN DENGAN FITUR ZOOM FOTO
         function renderPengumumanKegiatan() {
             const listP = document.getElementById('list-pengumuman'); listP.innerHTML = '';
             const listK = document.getElementById('list-kegiatan'); listK.innerHTML = '';
 
             storePengumuman.forEach(p => {
-                listP.innerHTML += `<div class="bg-white p-3.5 rounded-xl border text-xs space-y-1"><span class="text-[10px] font-bold text-blue-600">${p.tgl}</span><h4 class="font-bold">${p.judul}</h4><p class="text-slate-600">${p.uraian}</p></div>`;
+                listP.innerHTML += `<div class="bg-white p-3.5 rounded-xl border border-blue-100 shadow-sm space-y-1"><span class="text-[10px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">${p.tgl}</span><h4 class="font-bold text-xs text-slate-800">${p.judul}</h4><p class="text-[11px] text-slate-600">${p.uraian}</p></div>`;
             });
 
             storeKegiatan.forEach(k => {
-                let imgHtml = k.fotos && k.fotos[0] ? `<img src="${k.fotos[0]}" onclick="zoomImg('${k.fotos[0]}')" class="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90 transition" title="Ketuk untuk memperbesar">` : '';
-                listK.innerHTML += `<div class="bg-white p-3.5 rounded-xl border text-xs space-y-2">${imgHtml}<span class="text-[10px] font-bold text-orange-600">${k.tgl}</span><h4 class="font-bold">${k.judul}</h4><p class="text-slate-600">${k.uraian}</p></div>`;
+                let imgHtml = k.fotos && k.fotos[0] ? `<img src="${k.fotos[0]}" onclick="zoomImg('${k.fotos[0]}')" class="w-full h-36 object-cover rounded-lg cursor-pointer hover:opacity-90 transition border shadow-sm" title="Ketuk untuk memperbesar">` : '';
+                listK.innerHTML += `<div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2">${imgHtml}<span class="text-[10px] font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded">${k.tgl}</span><h4 class="font-bold text-xs text-slate-800">${k.judul}</h4><p class="text-[11px] text-slate-600">${k.uraian}</p></div>`;
             });
         }
 
-        // KIRIM LAPORAN DENGAN FOTO KE GAS
         async function sendLaporan(e) {
             e.preventDefault(); showLoading(true);
             const p = {
@@ -485,9 +492,9 @@
             if(file) {
                 const reader = new FileReader();
                 reader.onload = async function(event) {
-                    // Karena backend publik menerima format POST JSON, kita kirimkan via fetch POST
                     p.fotoBase64 = event.target.result.split(',')[1];
                     p.fotoName = file.name;
+                    p.fotoType = file.type;
                     await postDataToGAS(p);
                 };
                 reader.readAsDataURL(file);
@@ -501,13 +508,8 @@
             closeModalLapor(); fetchAllData(); alert("Laporan berhasil dikirim!");
         }
 
-        // ZOOM FOTO HELPERS
-        function zoomImg(url) {
-            document.getElementById('zoom-img-src').src = url;
-            document.getElementById('modal-zoom').classList.remove('hidden');
-        }
+        function zoomImg(url) { document.getElementById('zoom-img-src').src = url; document.getElementById('modal-zoom').classList.remove('hidden'); }
         function closeZoom() { document.getElementById('modal-zoom').classList.add('hidden'); }
-
         function openModalLapor() { document.getElementById('modal-lapor').classList.remove('hidden'); }
         function closeModalLapor() { document.getElementById('modal-lapor').classList.add('hidden'); }
     </script>
